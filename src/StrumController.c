@@ -32,19 +32,27 @@ enum {
 	CHORD_DIM
 };
 
+// Extension types
+enum {
+	ADDED_NONE,
+	ADDED_6,
+	ADDED_9,
+	ADDED_11
+};
+
 // special note value
 #define NO_NOTE 0xff
 //byte silent[1] = {NO_NOTE};
 
 // Define the chord structures
-byte maj[3] = {0,4,7};
+/*byte maj[3] = {0,4,7};
 byte min[3] = {0,3,7};
 byte dom7[4] = {0,4,7,10};
 byte maj7[4] = {0,4,7,11};
 byte min7[4] = {0,3,7,10};
 byte dim[3] = {0,3,6};
 byte aug[3] = {0,3,8};
-
+*/
 // Define the MIDI root notes mapped to each key
 byte roots[16]={36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
 
@@ -69,7 +77,7 @@ typedef struct
 	byte extension;
 } CHORD_SELECTION;
 
-CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, 0 };
+CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADDED_NONE };
 
 ////////////////////////////////////////////////////////////
 // INITIALISE SERIAL PORT FOR MIDI
@@ -135,7 +143,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 	lastChordSelection = *pChordSelection;
 	
 	int i,j,len=0;
-	byte *struc = maj;	
+	byte struc[5];
 	byte chord[16];
 	
 	if(CHORD_NONE == pChordSelection->chordType || 
@@ -146,42 +154,51 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 			chord[i] = NO_NOTE;
 	}
 	else
-	{
+	{	
 		// select the correct chord shape
-		switch(pChordSelection->chordType)
+		switch(pChordSelection->chordType)		
 		{
 		case CHORD_MIN:
-			struc = min;
-			len = sizeof(min);
+			struc[len++] = 0;
+			struc[len++] = 3;
+			struc[len++] = 7;
 			break;
 		case CHORD_DOM7:
-			struc = dom7;
-			len = sizeof(dom7);
+			struc[len++] = 0;
+			struc[len++] = 4;
+			struc[len++] = 7;
+			struc[len++] = 10;
 			break;
 		case CHORD_MAJ7:
-			struc = maj7;
-			len = sizeof(maj7);
+			struc[len++] = 0;
+			struc[len++] = 4;
+			struc[len++] = 7;
+			struc[len++] = 11;
 			break;
 		case CHORD_MIN7:
-			struc = min7;
-			len = sizeof(min7);
+			struc[len++] = 0;
+			struc[len++] = 3;
+			struc[len++] = 7;
+			struc[len++] = 10;
 			break;
 		case CHORD_AUG:
-			struc = aug;
-			len = sizeof(aug);
+			struc[len++] = 0;
+			struc[len++] = 3;
+			struc[len++] = 8;
 			break;
 		case CHORD_DIM:
-			struc = dim;
-			len = sizeof(dim);
+			struc[len++] = 0;
+			struc[len++] = 3;
+			struc[len++] = 6;
 			break;
 		case CHORD_MAJ:
 		default:
-			struc = maj;
-			len = sizeof(maj);
-			break;
+			struc[len++] = 0;
+			struc[len++] = 4;
+			struc[len++] = 7;
 			break;
 		}
-	
+
 		// fill the chord array with MIDI notes
 		byte root = pChordSelection->rootNote;
 		int from = 0;
@@ -237,7 +254,7 @@ void pollIO()
 	P_CLK = 1;
 	P_DS = 0;	
 
-	CHORD_SELECTION chordSelection = { CHORD_NONE,  NO_NOTE, 0 };
+	CHORD_SELECTION chordSelection = { CHORD_NONE,  NO_NOTE, ADDED_NONE };
 /*typedef struct 
 {
 	byte chordType;
@@ -303,18 +320,17 @@ void pollIO()
 						break;
 				}
 			}						
-			else if(!chordSelection.extension)
+			else if(chordSelection.extension == ADDED_NONE)
 			{
 				if(P_KEYS1)
-					chordSelection.extension = 1;
+					chordSelection.extension = ADDED_6;
 				else if(P_KEYS2)
-					chordSelection.extension = 2;
+					chordSelection.extension = ADDED_9;
 				else if(P_KEYS3)
-					chordSelection.extension = 3;
+					chordSelection.extension = ADDED_11;
 			}
 		}
 		
-	
 		// now check whether we got a signal
 		// back from the stylus (meaning that
 		// it's touching this string)
