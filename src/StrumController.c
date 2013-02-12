@@ -7,7 +7,7 @@
 // PIC CONFIG
 #pragma DATA _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF &_CLKOUTEN_OFF
 #pragma DATA _CONFIG2, _WRT_OFF & _PLLEN_OFF & _STVREN_ON & _BORV_19 & _LVP_OFF
-#pragma CLOCK_FREQ 8000000#pragma CLOCK_FREQ 8000000
+#pragma CLOCK_FREQ 8000000
 
 // Define pins
 #define P_CLK 			porta.2
@@ -62,6 +62,14 @@ byte lastChordType = CHORD_NONE;
 // current root note
 byte lastRoot = NO_NOTE;
 
+typedef struct 
+{
+	byte chordType;
+	byte rootNote;
+	byte extension;
+} CHORD_SELECTION;
+
+CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, 0 };
 
 ////////////////////////////////////////////////////////////
 // INITIALISE SERIAL PORT FOR MIDI
@@ -122,13 +130,16 @@ void startNote(byte channel, byte note, byte value)
 ////////////////////////////////////////////////////////////
 // CALCULATE NOTES FOR A CHORD SHAPE AND MAP THEM
 // TO THE STRINGS
-void changeToChord(int root, int which)
+void changeToChord(CHORD_SELECTION *pChordSelection)
 {	
+	lastChordSelection = *pChordSelection;
+	
 	int i,j,len=0;
 	byte *struc = maj;	
 	byte chord[16];
 	
-	if(CHORD_NONE == which || NO_NOTE == root)
+	if(CHORD_NONE == pChordSelection->chordType || 
+		NO_NOTE == pChordSelection->rootNote)
 	{
 		// stop playing
 		for(i=0;i<16;++i)
@@ -137,7 +148,7 @@ void changeToChord(int root, int which)
 	else
 	{
 		// select the correct chord shape
-		switch(which)
+		switch(pChordSelection->chordType)
 		{
 		case CHORD_MIN:
 			struc = min;
@@ -172,6 +183,7 @@ void changeToChord(int root, int which)
 		}
 	
 		// fill the chord array with MIDI notes
+		byte root = pChordSelection->rootNote;
 		int from = 0;
 		for(i=0;i<16;++i)
 		{
@@ -225,10 +237,19 @@ void pollIO()
 	P_CLK = 1;
 	P_DS = 0;	
 
+	CHORD_SELECTION chordSelection = { CHORD_NONE,  NO_NOTE, 0 };
+/*typedef struct 
+{
+	byte chordType;
+	byte extension;
+	byte rootNote;
+} CHORD_SELECTION;
+
 	// get ready to scan
 	int root = NO_NOTE;
-	int chordType = CHORD_NONE;
+	int chordType = CHORD_NONE;*/
 	unsigned long b = 1;
+	
 	
 	// scan for each string
 	for(int i=0;i<16;++i)
@@ -245,10 +266,10 @@ void pollIO()
 		if(P_KEYS1 || P_KEYS2 || P_KEYS3)
 		{
 			// have we decided on the root note yet?
-			if(NO_NOTE == root)
+			if(NO_NOTE == chordSelection.rootNote)
 			{
 				// look up the root note
-				root = roots[i];
+				chordSelection.rootNote = roots[i];
 				
 				// get the correct chord shape
 				switch(
@@ -257,37 +278,47 @@ void pollIO()
 					(P_KEYS3? 0b001:0))
 				{
 					case 0b111:
-						chordType = CHORD_AUG;
+						chordSelection.chordType = CHORD_AUG;
 						break;
 					case 0b110:
-						chordType = CHORD_DIM;
+						chordSelection.chordType = CHORD_DIM;
 						break;
 					case 0b100:
-						chordType = CHORD_MAJ;
+						chordSelection.chordType = CHORD_MAJ;
 						break;
 					case 0b101:
-						chordType = CHORD_MAJ7;
+						chordSelection.chordType = CHORD_MAJ7;
 						break;
 					case 0b010:
-						chordType = CHORD_MIN;
+						chordSelection.chordType = CHORD_MIN;
 						break;
 					case 0b011:
-						chordType = CHORD_MIN7;
+						chordSelection.chordType = CHORD_MIN7;
 						break;
 					case 0b001:
-						chordType = CHORD_DOM7;
+						chordSelection.chordType = CHORD_DOM7;
 						break;
 					default:
-						chordType = CHORD_NONE;
+						chordSelection.chordType = CHORD_NONE;
 						break;
 				}
 			}						
+			else if(!chordSelection.extension)
+			{
+				if(P_KEYS1)
+					chordSelection.extension = 1;
+				else if(P_KEYS2)
+					chordSelection.extension = 2;
+				else if(P_KEYS3)
+					chordSelection.extension = 3;
+			}
 		}
+		
 	
 		// now check whether we got a signal
 		// back from the stylus (meaning that
 		// it's touching this string)
-		byte whichString = i;
+		//byte whichString = i;
 		if(P_STYLUS)
 		{
 			// string is being touched... was
@@ -299,9 +330,9 @@ void pollIO()
 				// stylus is touching a string it
 				// is "damped" and does not play
 				// till contact is broken
-				if(notes[whichString] != NO_NOTE)
+				if(notes[i] != NO_NOTE)
 				{
-					startNote(0, notes[whichString],  0);
+					startNote(0, notes[i],  0);
 				}
 							
 				// remember this string is being touched
@@ -313,9 +344,9 @@ void pollIO()
 		else if(strings & b)
 		{
 			// start a note playing
-			if(notes[whichString] != NO_NOTE)
+			if(notes[i] != NO_NOTE)
 			{
-				startNote(0, notes[whichString], 127);
+				startNote(0, notes[i], 127);
 			}
 			
 			// remember string is not being touched
@@ -328,13 +359,8 @@ void pollIO()
 	}	
 	
 	// has the chord changed?
-	if(chordType != lastChordType || root != lastRoot)
-	{
-		// change to the new chord
-		lastChordType = chordType;
-		lastRoot = root;
-		changeToChord(root, chordType);
-	}		
+	if(0 != memcmp(&chordSelection, &lastChordSelection, sizeof(CHORD_SELECTION)))
+		changeToChord(&chordSelection);
 }
 
 void blink(int i)
@@ -381,7 +407,6 @@ void main()
 		pollIO();
 	}
 }
-
 
 
 
