@@ -1,11 +1,6 @@
 [Settings]
 Active Compiler=BoostC
-Target=PIC16F1825
-Active Directory=C:\Dev\PIC\StrumController\
-Active Config=Debug
-Config=1
-Last ExtIdx=1
-Last Dir=C:\Dev\PIC\MidiHUB\
+Target=PIC16F688
 [Files]
 File0=StrumController.c
 Count=1
