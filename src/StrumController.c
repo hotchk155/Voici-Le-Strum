@@ -5,17 +5,18 @@
 #include <memory.h>
 
 // PIC CONFIG
-#pragma DATA _CONFIG, _MCLRE_OFF&_WDT_OFF&_INTRC_OSC_NOCLKOUT
-#pragma CLOCK_FREQ 8000000
+#pragma DATA _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF &_CLKOUTEN_OFF
+#pragma DATA _CONFIG2, _WRT_OFF & _PLLEN_OFF & _STVREN_ON & _BORV_19 & _LVP_OFF
+#pragma CLOCK_FREQ 8000000#pragma CLOCK_FREQ 8000000
 
 // Define pins
 #define P_CLK 			porta.2
 #define P_DS 			portc.0
 #define P_STYLUS 		portc.1
 #define P_HEARTBEAT 	portc.2
-#define P_KEYS1	 		portc.3
+#define P_KEYS1	 		porta.5
 #define P_KEYS2	 		porta.4
-#define P_KEYS3	 		porta.5
+#define P_KEYS3	 		portc.3
 
 typedef unsigned char byte;
 
@@ -69,10 +70,10 @@ void init_usart()
 	pir1.1 = 1;	//TXIF transmit enable
 	pie1.1 = 0;	//TXIE no interrupts
 	
-	baudctl.4 = 0;		// synchronous bit polarity 
-	baudctl.3 = 1;		// enable 16 bit brg
-	baudctl.1 = 0;		// wake up enable off
-	baudctl.0 = 0;		// disable auto baud detect
+	baudcon.4 = 0;		// synchronous bit polarity 
+	baudcon.3 = 1;		// enable 16 bit brg
+	baudcon.1 = 0;		// wake up enable off
+	baudcon.0 = 0;		// disable auto baud detect
 		
 	txsta.6 = 0;	// 8 bit transmission
 	txsta.5 = 1;	// transmit enable
@@ -86,6 +87,7 @@ void init_usart()
 	spbrgh = 0;		// brg high byte
 	spbrg = 15;		// brg low byte (31250)	
 }
+
 		
 ////////////////////////////////////////////////////////////
 // SEND A MIDI BYTE
@@ -246,7 +248,7 @@ void pollIO()
 			if(NO_NOTE == root)
 			{
 				// look up the root note
-				root = roots[15-i];
+				root = roots[i];
 				
 				// get the correct chord shape
 				switch(
@@ -285,7 +287,7 @@ void pollIO()
 		// now check whether we got a signal
 		// back from the stylus (meaning that
 		// it's touching this string)
-		byte whichString = 15-i;
+		byte whichString = i;
 		if(P_STYLUS)
 		{
 			// string is being touched... was
@@ -349,16 +351,17 @@ void blink(int i)
 void main()
 { 
 	// osc control / 8MHz / internal
-	osccon = 0b01110001;
+	osccon = 0b01110010;
 	
 	// timer0... configure source and prescaler
-	option_reg = 0b10000011;
-	cmcon0 = 7;                      
+	//option_reg.7 = 0b10000011;
+	//cmcon0 = 7;                      
 	
 	// configure io
 	trisa = 0b00110000;              	
     trisc = 0b00001010;              
-	ansel = 0b00000000;
+	ansela = 0b00000000;
+	anselc = 0b00000000;
       
     // blink twice
     blink(2);

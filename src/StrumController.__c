@@ -1,6 +1,9 @@
 [Settings]
 Active Compiler=BoostC
-Target=PIC16F688
+Target=PIC16F1825
+Active Config=Release
+Active Directory=C:\Dev\GitHub\Voici-Le-Strum\src\
+Config=0
 [Files]
 File0=StrumController.c
 Count=1
