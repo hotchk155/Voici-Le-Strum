@@ -35,24 +35,14 @@ enum {
 // Extension types
 enum {
 	ADDED_NONE,
-	ADDED_6,
-	ADDED_9,
-	ADDED_11
+	SUS_4,
+	ADD_6,
+	ADD_9
 };
 
 // special note value
 #define NO_NOTE 0xff
-//byte silent[1] = {NO_NOTE};
 
-// Define the chord structures
-/*byte maj[3] = {0,4,7};
-byte min[3] = {0,3,7};
-byte dom7[4] = {0,4,7,10};
-byte maj7[4] = {0,4,7,11};
-byte min7[4] = {0,3,7,10};
-byte dim[3] = {0,3,6};
-byte aug[3] = {0,3,8};
-*/
 // Define the MIDI root notes mapped to each key
 byte roots[16]={36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
 
@@ -63,12 +53,6 @@ unsigned long strings =0;
 
 // Notes for each string
 byte notes[16] = {0};
-
-// current chord type
-byte lastChordType = CHORD_NONE;
-
-// current root note
-byte lastRoot = NO_NOTE;
 
 typedef struct 
 {
@@ -155,48 +139,56 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 	}
 	else
 	{	
-		// select the correct chord shape
+		// root
+		struc[len++] = 0; 
+		
+		// added 2/9
+		if(pChordSelection->extension == ADD_9)		
+			struc[len++] = 2;
+			
+		// sus 4
+		if(pChordSelection->extension == SUS_4)	{		
+			struc[len++] = 5;
+		} else {
+			switch(pChordSelection->chordType)		
+			{		
+				// minor 3rd
+			case CHORD_MIN: case CHORD_MIN7: case CHORD_AUG: case CHORD_DIM: // minor 3rd
+				struc[len++] = 3;
+				break;
+			default: // major 3rd
+				struc[len++] = 4;
+				break;		
+			}
+		}
+		
+		// 5th
 		switch(pChordSelection->chordType)		
 		{
-		case CHORD_MIN:
-			struc[len++] = 0;
-			struc[len++] = 3;
-			struc[len++] = 7;
-			break;
-		case CHORD_DOM7:
-			struc[len++] = 0;
-			struc[len++] = 4;
-			struc[len++] = 7;
-			struc[len++] = 10;
-			break;
-		case CHORD_MAJ7:
-			struc[len++] = 0;
-			struc[len++] = 4;
-			struc[len++] = 7;
-			struc[len++] = 11;
-			break;
-		case CHORD_MIN7:
-			struc[len++] = 0;
-			struc[len++] = 3;
-			struc[len++] = 7;
-			struc[len++] = 10;
-			break;
 		case CHORD_AUG:
-			struc[len++] = 0;
-			struc[len++] = 3;
 			struc[len++] = 8;
 			break;
 		case CHORD_DIM:
-			struc[len++] = 0;
-			struc[len++] = 3;
 			struc[len++] = 6;
 			break;
-		case CHORD_MAJ:
 		default:
-			struc[len++] = 0;
-			struc[len++] = 4;
 			struc[len++] = 7;
 			break;
+		}
+
+
+		if(pChordSelection->extension == ADD_6)		
+			struc[len++] = 9;
+				
+		// 7th
+		switch(pChordSelection->chordType)		
+		{
+		case CHORD_DOM7: case CHORD_MIN7:
+			struc[len++] = 10;
+			break;
+		case CHORD_MAJ7:
+			struc[len++] = 11;
+			break;				
 		}
 
 		// fill the chord array with MIDI notes
@@ -240,7 +232,9 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 
 	// store the new chord
 	for(i=0;i<16;++i)
+	{
 		notes[i] = chord[i];
+	}
 	
 }
 				
@@ -323,11 +317,11 @@ void pollIO()
 			else if(chordSelection.extension == ADDED_NONE)
 			{
 				if(P_KEYS1)
-					chordSelection.extension = ADDED_6;
+					chordSelection.extension = SUS_4;
 				else if(P_KEYS2)
-					chordSelection.extension = ADDED_9;
+					chordSelection.extension = ADD_6;
 				else if(P_KEYS3)
-					chordSelection.extension = ADDED_11;
+					chordSelection.extension = ADD_9;
 			}
 		}
 		
