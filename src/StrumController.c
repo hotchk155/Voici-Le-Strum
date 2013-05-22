@@ -13,14 +13,18 @@
 #define P_CLK 			porta.2
 #define P_DS 			portc.0
 #define P_STYLUS 		portc.1
-#define P_HEARTBEAT 	portc.2
+#define P_LED 			portc.2
 #define P_KEYS1	 		porta.5
 #define P_KEYS2	 		porta.4
 #define P_KEYS3	 		portc.3
+#define P_MODE	 		portc.5
+//portc.4 = TX
+
+
 
 typedef unsigned char byte;
 
-// Chord types
+// CHORD SHAPES
 enum {
 	CHORD_NONE,
 	CHORD_MAJ,
@@ -32,6 +36,7 @@ enum {
 	CHORD_DIM
 };
 
+// ROOT NOTES
 enum {
 	ROOT_C,
 	ROOT_CSHARP,
@@ -47,9 +52,9 @@ enum {
 	ROOT_B
 };
 
-// Extension types
+// CHORD EXTENSIONS
 enum {
-	ADDED_NONE,
+	ADD_NONE,
 	SUS_4,
 	ADD_6,
 	ADD_9
@@ -59,11 +64,14 @@ enum {
 	OPT_PLUCK 		= 0x01, // if set then notes are triggered only when contact is broken
 	OPT_HOLDCHORD	= 0x02, // if set then chord plays on MIDI channel 1 as soon as pressed
 	OPT_ADDNOTES	= 0x04, // additional notes can be added to the chord
-	OPT_GUITAR		= 0x08,  // guitar type fingering
-	OPT_RINGON		= 0x10  // let it ring till next chord pressed
+	OPT_GUITAR		= 0x08, // guitar type fingering
+	OPT_RINGON		= 0x10, // let it ring till next chord pressed
+	OPT_OCTAVEPAIR	= 0x20, // 12 string mode
+	OPT_SPREAD		= 0x40, // spread mode
+	OPT_DAMPCHANGE	= 0x80  // damp notes which are not in a new chord
 };
 
-byte options = OPT_GUITAR|OPT_PLUCK|OPT_RINGON;
+byte options = OPT_PLUCK|OPT_DAMPCHANGE;
 
 // special note value
 #define NO_NOTE 0xff
@@ -75,6 +83,37 @@ byte options = OPT_GUITAR|OPT_PLUCK|OPT_RINGON;
 // to the stylus (notes triggered when stylus breaks contact
 // with the strings)
 unsigned long strings =0;
+
+/*
+C - Pluck
+D - Hold
+E - Extra Notes
+F - 
+G - Guitar
+A - 12 String
+B - Panic
+
+*/
+
+enum 
+{
+	MODE_PLUCK, 			// if set then notes are triggered only when contact is broken
+	MODE_HOLDCHORD,			// if set then chord plays on MIDI channel 1 as soon as pressed
+	MODE_ADDNOTES,			// additional notes can be added to the chord
+	MODE_GUITAR,			// guitar type fingering
+	MODE_RINGON, 			// let it ring till next chord pressed
+	MODE_OCTAVEPAIR,		// 12 string mode: +1 octave between each mapped string
+	MODE_SPREAD,			// spread mode: gap between each mapped string
+
+	MODE_ALLNOTESOFF = 11,	// MIDI panic button
+	
+	
+	MODE_OPT_ON = 0x10,
+	MODE_OPT_OFF = 0x20,
+	MODE_OPT_QUERY = 0x40,
+	NO_MODE = 0xff
+};
+byte lastModeSelection = NO_MODE;
 
 byte velocity = 127;
 
@@ -88,7 +127,7 @@ typedef struct
 	byte extension;
 } CHORD_SELECTION;
 
-CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADDED_NONE };
+CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADD_NONE };
 
 ////////////////////////////////////////////////////////////
 // INITIALISE SERIAL PORT FOR MIDI
@@ -128,22 +167,35 @@ void send(unsigned char c)
 // CONTINUOUS CONTROLLER MESSAGE
 void sendController(byte channel, byte controller, byte value)
 {
-	P_HEARTBEAT = 1;
+	P_LED = 1;
 	send(0xb0 | channel);
 	send(controller&0x7f);
 	send(value&0x7f);
-	P_HEARTBEAT = 0;	
+	P_LED = 0;	
 }
 
 ////////////////////////////////////////////////////////////
 // NOTE MESSAGE
 void startNote(byte channel, byte note, byte value)
 {
-	P_HEARTBEAT = 1;
+	P_LED = 1;
 	send(0x90 | channel);
 	send(note&0x7f);
 	send(value&0x7f);
-	P_HEARTBEAT = 0;	
+	P_LED = 0;	
+}
+void stopNote(byte channel, byte note)
+{
+	P_LED = 1;
+	send(0x90 | channel);
+	send(note&0x7f);
+	send(0x00);
+	P_LED = 0;	
+}
+void stopAllNotes(byte channel)
+{
+	for(byte i=0; i<128; ++i)
+		stopNote(channel, i);
 }
 
 ////////////////////////////////////////////////////////////
@@ -208,9 +260,14 @@ void stackTriads(CHORD_SELECTION *pChordSelection, byte *chord)
 	// fill the chord array with MIDI notes
 	byte root = pChordSelection->rootNote + 36;
 	int from = 0;
-	for(int i=0;i<16;++i)
+	int to = 0;
+	while(to < 16)
 	{
-		chord[i] = root+struc[from];		
+		chord[to++] = root+struc[from];		
+		if((options & OPT_SPREAD) && (to<16))
+			chord[to++] = NO_NOTE;
+		else if((options & OPT_OCTAVEPAIR) && (to<16))
+			chord[to++] = root+struc[from]+12;		
 		if(++from >= len)
 		{
 			root+=12;
@@ -224,6 +281,15 @@ void guitarCShape(byte ofs, byte *chord)
 	chord[0] = 43 + ofs;
 	chord[1] = 48 + ofs;
 	chord[2] = 52 + ofs;
+	chord[3] = 55 + ofs;
+	chord[4] = 60 + ofs;
+	chord[5] = 64 + ofs;
+}
+void guitarC7Shape(byte ofs, byte *chord)
+{
+	chord[0] = 43 + ofs;
+	chord[1] = 47 + ofs;
+	chord[2] = 53 + ofs;
 	chord[3] = 55 + ofs;
 	chord[4] = 60 + ofs;
 	chord[5] = 64 + ofs;
@@ -246,6 +312,15 @@ void guitarAmShape(byte ofs, byte *chord)
 	chord[4] = 60 + ofs;
 	chord[5] = 64 + ofs;
 }
+void guitarA7Shape(byte ofs, byte *chord)
+{
+	chord[0] = 40 + ofs;
+	chord[1] = 45 + ofs;
+	chord[2] = 50 + ofs;
+	chord[3] = 57 + ofs;
+	chord[4] = 60 + ofs;
+	chord[5] = 64 + ofs;
+}
 void guitarDShape(byte ofs, byte *chord)
 {
 	chord[0] = NO_NOTE;
@@ -264,6 +339,15 @@ void guitarDmShape(byte ofs, byte *chord)
 	chord[4] = 62 + ofs;
 	chord[5] = 65 + ofs;
 }
+void guitarD7Shape(byte ofs, byte *chord)
+{
+	chord[0] = NO_NOTE;
+	chord[1] = 45 + ofs;
+	chord[2] = 50 + ofs;
+	chord[3] = 57 + ofs;
+	chord[4] = 60 + ofs;
+	chord[5] = 66 + ofs;
+}
 void guitarEShape(byte ofs, byte *chord)
 {
 	chord[0] = 40 + ofs;
@@ -279,6 +363,15 @@ void guitarEmShape(byte ofs, byte *chord)
 	chord[1] = 47 + ofs;
 	chord[2] = 52 + ofs;
 	chord[3] = 55 + ofs;
+	chord[4] = 59 + ofs;
+	chord[5] = 64 + ofs;
+}
+void guitarE7Shape(byte ofs, byte *chord)
+{
+	chord[0] = 40 + ofs;
+	chord[1] = 47 + ofs;
+	chord[2] = 50 + ofs;
+	chord[3] = 56 + ofs;
 	chord[4] = 59 + ofs;
 	chord[5] = 64 + ofs;
 }
@@ -336,15 +429,42 @@ void guitarChord(CHORD_SELECTION *pChordSelection, byte *result)
 			case ROOT_B:   		guitarAmShape(2, chord);	break;
 			}
 			break;
+		case CHORD_DOM7:
+			switch(pChordSelection->rootNote)
+			{
+			case ROOT_C:		guitarC7Shape(3, chord);	break;
+			case ROOT_CSHARP:  	guitarA7Shape(4, chord);	break;
+			case ROOT_D:		guitarD7Shape(0, chord);	break;
+			case ROOT_DSHARP:	guitarA7Shape(6, chord);	break;
+			case ROOT_E:		guitarE7Shape(0, chord);	break;
+			case ROOT_F:		guitarE7Shape(1, chord);	break;
+			case ROOT_FSHARP:	guitarE7Shape(2, chord);	break;
+			case ROOT_G:		guitarE7Shape(3, chord);	break;
+			case ROOT_GSHARP:	guitarE7Shape(4, chord);	break;
+			case ROOT_A:		guitarA7Shape(0, chord);	break;
+			case ROOT_ASHARP:   guitarA7Shape(1, chord);	break;
+			case ROOT_B:   		guitarA7Shape(2, chord);	break;
+			}
+			break;
 		}
 		
 		byte *src = chord;
 		for(i=0;i<6;++i)
 		{
-			*result=*src;
+			if(*src == NO_NOTE)
+				*result = NO_NOTE;
+			else			
+				*result=*src+12;
 			++result;
-			*result=*src+12;
-			++result;
+			if(options & OPT_SPREAD) {
+				*result=NO_NOTE;
+				++result;
+			}
+			else if(options & OPT_OCTAVEPAIR) 
+			{
+				*result=*src+24;
+				++result;
+			}
 			++src;
 		}
 }
@@ -387,23 +507,32 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		{
 			if(notes[i] != NO_NOTE)
 			{
-				// check to see if it is part of the new chord
-				byte foundIt = 0;
-				for(j=0;j<16;++j)
-				{
-					if(chord[j] == notes[i])
-					{
-						foundIt = true;
-						break;
-					}
-				}
-				
-				// if not, then make sure its not playing
-				if(!foundIt)				
+				if(options & OPT_DAMPCHANGE)
 				{
 					startNote(0, notes[i], 0);
 					if(options & OPT_HOLDCHORD)
-						startNote(1, notes[i], 0);
+						stopNote(1, notes[i]);
+				}
+				else
+				{
+					// check to see if it is part of the new chord
+					byte foundIt = 0;
+					for(j=0;j<16;++j)
+					{
+						if(chord[j] == notes[i])
+						{
+							foundIt = true;
+							break;
+						}
+					}
+					
+					// if not, then make sure its not playing
+					if(!foundIt)				
+					{
+						startNote(0, notes[i], 0);
+						if(options & OPT_HOLDCHORD)
+							stopNote(1, notes[i]);
+					}
 				}
 			}		
 		}
@@ -428,9 +557,10 @@ void pollIO()
 	P_CLK = 1;
 	P_DS = 0;	
 
-	CHORD_SELECTION chordSelection = { CHORD_NONE,  NO_NOTE, ADDED_NONE };
+	CHORD_SELECTION chordSelection = { CHORD_NONE,  NO_NOTE, ADD_NONE };
 	unsigned long b = 1;
 	byte stringCount = 0;
+	byte modeSelection = NO_MODE;
 	
 	// scan for each string
 	for(int i=0;i<16;++i)
@@ -446,89 +576,107 @@ void pollIO()
 		// keyboard scan rows?
 		if(P_KEYS1 || P_KEYS2 || P_KEYS3)
 		{
-			// have we decided on the root note yet?
-			if(NO_NOTE == chordSelection.rootNote)
+			// is the mode button pressed?
+			if(!P_MODE)
 			{
-				// look up the root note
-				chordSelection.rootNote = i;
-				
-				// get the correct chord shape
-				switch(
-					(P_KEYS1? 0b100:0)|
-					(P_KEYS2? 0b010:0)|
-					(P_KEYS3? 0b001:0))
+				if(NO_MODE == modeSelection)
 				{
-					case 0b111:
-						chordSelection.chordType = CHORD_AUG;
-						break;
-					case 0b110:
-						chordSelection.chordType = CHORD_DIM;
-						break;
-					case 0b100:
-						chordSelection.chordType = CHORD_MAJ;
-						break;
-					case 0b101:
-						chordSelection.chordType = CHORD_MAJ7;
-						break;
-					case 0b010:
-						chordSelection.chordType = CHORD_MIN;
-						break;
-					case 0b011:
-						chordSelection.chordType = CHORD_MIN7;
-						break;
-					case 0b001:
-						chordSelection.chordType = CHORD_DOM7;
-						break;
-					default:
-						chordSelection.chordType = CHORD_NONE;
-						break;
+					modeSelection = i;
+					if(P_KEYS1) modeSelection |= MODE_OPT_ON;
+					if(P_KEYS2) modeSelection |= MODE_OPT_OFF;
+					if(P_KEYS3) modeSelection |= MODE_OPT_QUERY;
 				}
-			}						
-			else if((options & OPT_ADDNOTES) && (chordSelection.extension == ADDED_NONE))
+			}
+			// have we decided on the root note yet?
+			else
 			{
-				if(P_KEYS1)
-					chordSelection.extension = SUS_4;
-				else if(P_KEYS2)
-					chordSelection.extension = ADD_6;
-				else if(P_KEYS3)
-					chordSelection.extension = ADD_9;
+				if(NO_NOTE == chordSelection.rootNote)
+				{
+					// look up the root note
+					chordSelection.rootNote = i;
+					
+					// get the correct chord shape
+					switch(
+						(P_KEYS1? 0b100:0)|
+						(P_KEYS2? 0b010:0)|
+						(P_KEYS3? 0b001:0))
+					{
+						case 0b111:
+							chordSelection.chordType = CHORD_AUG;
+							break;
+						case 0b110:
+							chordSelection.chordType = CHORD_DIM;
+							break;
+						case 0b100:
+							chordSelection.chordType = CHORD_MAJ;
+							break;
+						case 0b101:
+							chordSelection.chordType = CHORD_MAJ7;
+							break;
+						case 0b010:
+							chordSelection.chordType = CHORD_MIN;
+							break;
+						case 0b011:
+							chordSelection.chordType = CHORD_MIN7;
+							break;
+						case 0b001:
+							chordSelection.chordType = CHORD_DOM7;
+							break;
+						default:
+							chordSelection.chordType = CHORD_NONE;
+							break;
+					}
+				}						
+				else if((options & OPT_ADDNOTES) && (chordSelection.extension == ADD_NONE))
+				{
+					if(P_KEYS1)
+						chordSelection.extension = SUS_4;
+					else if(P_KEYS2)
+						chordSelection.extension = ADD_6;
+					else if(P_KEYS3)
+						chordSelection.extension = ADD_9;
+				}
 			}
 		}
-		
+
+		if(!P_MODE)
+		{
+			if(P_STYLUS)
+				velocity = 0x0f | (i<<4);
+		}
 		// now check whether we got a signal
 		// back from the stylus (meaning that
 		// it's touching this string)
-		//byte whichString = i;
-		if(P_STYLUS)
+		else if(P_STYLUS)
 		{
 			++stringCount;
-
+			
 			// string is being touched... was
 			// it being touched before?
 			if(!(strings & b))
 			{
+				// remember this string is being touched
+				strings |= b;
+				
 				// stop the note playing (if
 				// it is currently playing). When 
 				// stylus is touching a string it
 				// is "damped" and does not play
 				// till contact is broken
-					if(notes[i] != NO_NOTE)
-						startNote(0, notes[i],  (options & OPT_PLUCK)? 0 : velocity);
-				
-				// remember this string is being touched
-				strings |= b;
+				if(notes[i] != NO_NOTE)
+					startNote(0, notes[i],  (options & OPT_PLUCK)? 0 : velocity);						
 			}
 		}
 		// stylus not touching string now, but was it 
 		// touching the string before?
 		else if(strings & b)
 		{
+			// remember string is not being touched
+			strings &= ~b;
+			
 			// start a note playing
 			if(notes[i] != NO_NOTE)
 				startNote(0, notes[i], (options & OPT_PLUCK)? velocity : 0);
-			
-			// remember string is not being touched
-			strings &= ~b;
 		}	
 		
 		// shift the masking bit	
@@ -536,20 +684,47 @@ void pollIO()
 		
 	}	
 	
+	if(modeSelection!=NO_MODE)
+	{
+		byte optionBit = 0;
+		switch(modeSelection&0xF)
+		{
+			case MODE_PLUCK: 		optionBit = OPT_PLUCK; 			break;
+			case MODE_HOLDCHORD: 	optionBit = OPT_HOLDCHORD; 		break;
+			case MODE_ADDNOTES: 	optionBit = OPT_ADDNOTES; 		break;
+			case MODE_GUITAR: 		optionBit = OPT_GUITAR; 		break;
+			case MODE_RINGON: 		optionBit = OPT_RINGON; 		break;
+			case MODE_OCTAVEPAIR: 	optionBit = MODE_OCTAVEPAIR; 	break;		
+			case MODE_SPREAD: 		optionBit = MODE_SPREAD; 		break;		
+			case MODE_ALLNOTESOFF: 
+				stopAllNotes(0); 
+				stopAllNotes(1); 
+				break;
+		}
+		if(modeSelection & MODE_OPT_ON)
+			options |= optionBit;
+		else if(modeSelection & MODE_OPT_OFF)
+			options &= ~optionBit;		
+		P_LED = (options & optionBit)? 1:0;
+		delay_ms(100);
+		P_LED = 0;
+	}
+	else
 	// has the chord changed? note that if the stylus is bridging 2 strings we will not change
 	// the chord selection. This is because this situation can confuse the keyboard matrix
 	// causing unwanted chord changed
 	if((stringCount < 2) && 0 != memcmp(&chordSelection, &lastChordSelection, sizeof(CHORD_SELECTION)))
 		changeToChord(&chordSelection);
+		
 }
 
 void blink(int i)
 {
 	while(i-->0)
 	{
-		P_HEARTBEAT = 1;
+		P_LED = 1;
 		delay_ms(500);
-		P_HEARTBEAT = 0;
+		P_LED = 0;
 		delay_ms(500);
 	}
 }
@@ -558,14 +733,18 @@ void main()
 { 
 	// osc control / 8MHz / internal
 	osccon = 0b01110010;
+
+	// weak pull up on A0 and C5
+	wpua = 0b00000001;
+	wpuc = 0b00100000;
+	option_reg.7 = 0;
 	
-	// timer0... configure source and prescaler
-	//option_reg.7 = 0b10000011;
-	//cmcon0 = 7;                      
 	
 	// configure io
+			//76543210
 	trisa = 0b00110000;              	
-    trisc = 0b00001010;              
+    trisc = 0b00101010;              
+    
 	ansela = 0b00000000;
 	anselc = 0b00000000;
       
