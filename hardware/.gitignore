@@ -47,3 +47,5 @@ Desktop.ini
 
 *.zip
 *.tmp
+*.pro
+*.s##
