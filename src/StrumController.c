@@ -1,9 +1,18 @@
 ////////////////////////////////////////////////////////////
 //
-// STRUM CHORD CONTROLLER
+//    //                ////  //
+//    //     ///       //     //                 
+//    //    // //       ///   ///   //// //  //  //////
+//    //    /////         //  //   //    //  // // // //
+//    //    //        //  //  //   //    //  // // // //
+//    /////  ///      /////    /// //     ///// //    //
+//    STRUMMED CHORD CONTROLLER
 //
-// (c) 2013 J.Hotchkiss
-// SOURCEBOOST C FOR PIC16F1825
+//    (c) 2013 J.Hotchkiss
+//    SOURCEBOOST C FOR PIC16F1825
+//
+// Ver  Date 
+// 1.00 16Jun2013 Initial baseline release for new PCB
 //
 ////////////////////////////////////////////////////////////
 
@@ -15,8 +24,6 @@
 #pragma DATA _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF &_CLKOUTEN_OFF
 #pragma DATA _CONFIG2, _WRT_OFF & _PLLEN_OFF & _STVREN_ON & _BORV_19 & _LVP_OFF
 #pragma CLOCK_FREQ 8000000
-
-typedef unsigned char byte;
 
 // Define pins
 #define P_CLK 			porta.2
@@ -68,31 +75,40 @@ enum {
 // CONTROLLING FLAGS
 enum {
 	OPT_PLAYONMAKE 			= 0x0001, // start playing a note when stylus makes contact with pad
-	OPT_STOPONBREAK 		= 0x0002, 
+	OPT_STOPONBREAK 		= 0x0002, // stop playing a note when stylus breaks contact with pad
 	OPT_PLAYONBREAK			= 0x0004, // start playing a note when stylus breaks contact with pad 
-	OPT_STOPONMAKE			= 0x0008, 
-	OPT_DRONE				= 0x0010, // play "drone" chords on 
-	OPT_GUITAR				= 0x0020, 
-	OPT_GUITAR2 			= 0x0040,
-	OPT_GUITARBASSNOTES		= 0x0080,
-	OPT_SUSTAIN				= 0x0100, 
-	OPT_SUSTAINCOMMON		= 0x0200,
-	OPT_SUSTAINDRONE		= 0x0400,
-	OPT_SUSTAINDRONECOMMON	= 0x0800,
-	OPT_ADDNOTES			= 0x1000,
-	OPT_CHROMATIC			= 0x2000
+	OPT_STOPONMAKE			= 0x0008, // stop playing a note when stylus makes contact with pad 
+	OPT_DRONE				= 0x0010, // play chord triad on MIDI channel 2 as soon as chord button is pressed and stop when released
+	OPT_GUITAR				= 0x0020, // use guitar voicing
+	OPT_GUITAR2 			= 0x0040, // use octave shifted guitar chord map on strings 10-16
+	OPT_GUITARBASSNOTES		= 0x0080, // enable bottom guitar strings (that are usually damped) but can provide alternating bass notes
+	OPT_SUSTAIN				= 0x0100, // do not kill all strings when chord button is released
+	OPT_SUSTAINCOMMON		= 0x0200, // when switching to a new chord, allow common notes to sustain (do not retrig) on strings
+	OPT_SUSTAINDRONE		= 0x0400, // do not kill drone chord when chord button is released
+	OPT_SUSTAINDRONECOMMON	= 0x0800, // when switching to a new chord, allow common notes to sustain (do not retrig) on drone chord
+	OPT_ADDNOTES			= 0x1000, // enable adding of sus4, add6, add9 to chord
+	OPT_CHROMATIC			= 0x2000  // map strings to chromatic scale from C instead of chord
 };
 
+// Byte type
+typedef unsigned char byte;
 
-
+// This structure is used to define a specific chord setup
+typedef struct 
+{
+	byte chordType;	// The chord shape
+	byte rootNote;  // root note from 0 (C)
+	byte extension; // added note if applicable
+} CHORD_SELECTION;
 
 // special note value
 #define NO_NOTE 0xff
 
-// bit mapped register of which strings are currently connected
-// to the stylus (notes triggered when stylus breaks contact
-// with the strings)
+// bit mapped register of which strings are currently connected to the stylus 
 unsigned long strings =0;
+
+// The first column containing a pressed chord button during the last key scan
+byte lastRootNoteSelection = NO_NOTE;
 
 // Define the information relating to string play
 byte playChannel = 0;
@@ -104,18 +120,17 @@ byte droneChannel = 1;
 byte droneVelocity = 127;
 byte droneNotes[16];
 
-// This structure is used to define a specific chord setup
-typedef struct 
-{
-	byte chordType;
-	byte rootNote;
-	byte extension;
-} CHORD_SELECTION;
-
-// This structure records the previous chord selection so we know
-// if it has changed
+// This structure records the previous chord selection so we can
+// detected if it has changed
 CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADD_NONE };
 
+////////////////////////////////////////////////////////////
+//
+//
+// DEFINE THE PATCHES
+//
+//
+////////////////////////////////////////////////////////////
 
 // Basic strum
 const unsigned int patch_BasicStrum = 
@@ -183,6 +198,7 @@ const unsigned int patch_OrganButtonsChromatic =
 	OPT_SUSTAINDRONE		|
 	OPT_SUSTAINDRONECOMMON	;
 
+// Selected patch
 unsigned int options = patch_BasicStrum;
 
 
@@ -230,7 +246,6 @@ void init_usart()
 	spbrg = 15;		// brg low byte (31250)	
 }
 
-		
 ////////////////////////////////////////////////////////////
 //
 // SEND A MIDI BYTE
@@ -402,12 +417,11 @@ void guitarGShape(byte ofs, byte extension, byte *chord)
 
 ////////////////////////////////////////////////////////////
 //
-// MAKE A GUITAR CHORD 
+// GUITAR CHORD MAPPING
 //
 ////////////////////////////////////////////////////////////
 byte guitarChord(CHORD_SELECTION *pChordSelection, byte transpose, byte *chord)
 {	
-	int i;
 	memset(chord, NO_NOTE, 16);
 	switch(pChordSelection->chordType)
 	{
@@ -465,7 +479,7 @@ byte guitarChord(CHORD_SELECTION *pChordSelection, byte transpose, byte *chord)
 		default:
 			return 0;
 	}	
-	for(i=0;i<16;++i)
+	for(int i=0;i<16;++i)
 		if(chord[i] != NO_NOTE)
 			chord[i] += transpose;
 	return 6;
@@ -619,11 +633,12 @@ void playChordNotes(byte *oldNotes, byte *newNotes, byte channel, byte velocity,
 void releaseChordNotes(byte *oldNotes, byte channel, byte sustain)
 {
 	int i;
-	
+
+	// override allowed by sustain option
 	if(sustain)
 		return;
 		
-	// Start by silencing old notes which are not in the new chord
+	// Silence notes 
 	for(i=0;i<16;++i)
 	{		
 		if(NO_NOTE != oldNotes[i])
@@ -637,7 +652,8 @@ void releaseChordNotes(byte *oldNotes, byte channel, byte sustain)
 
 ////////////////////////////////////////////////////////////
 //
-// CALCULATE NOTES FOR A CHORD SHAPE AND MAP THEM TO THE STRINGS
+// CALCULATE NOTES FOR A CHORD SHAPE, MAP THEM TO THE STRINGS
+// AND START PLAYING DRONE IF APPROPRIATE
 //
 ////////////////////////////////////////////////////////////
 void changeToChord(CHORD_SELECTION *pChordSelection)
@@ -655,8 +671,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		releaseChordNotes(droneNotes, droneChannel, !!(options & OPT_SUSTAINDRONE));		
 	}
 	else 	
-	{
-			
+	{			
 		// are we in guitar mode?
 		if(options & OPT_GUITAR)
 		{
@@ -678,9 +693,9 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 				chordLen = 16;
 			}
 		}
+		// should we have a chromatic scale mapped to the strings?
 		else if(options & OPT_CHROMATIC)
 		{
-			// chromatic scale
 			for(i=0;i<16;++i)
 				chord[i] = 48+i;
 			chordLen=16;
@@ -688,21 +703,27 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		else	
 		{
 			// stack triads
-			chordLen = stackTriads(pChordSelection, -1, 36, chord);
+			stackTriads(pChordSelection, -1, 36, chord);
+			chordLen = 16;
 		}
 	
 		// copy chord to notes and pad with null notes
 		memset(notes, NO_NOTE, 16);
 		memcpy(notes, chord, chordLen);
+		
+		// damp notes which are not a part of the new chord
 		playChordNotes(playNotes, notes, playChannel, 0, !!(options & OPT_SUSTAINCOMMON));
 
 		// deal with drone
 		if(options & OPT_DRONE)
 		{
+			// for the drone chord we only play the triad (not stacked)
 			stackTriads(pChordSelection, 1, 36, notes);
 			playChordNotes(droneNotes, notes, droneChannel, droneVelocity, !!(options & OPT_SUSTAINDRONECOMMON));
 		}
 	}
+	
+	// Store the chord, so we can recognise when it changes
 	lastChordSelection = *pChordSelection;
 	
 }
@@ -713,7 +734,6 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 // POLL INPUT AND MANAGE THE SENDING OF MIDI INFO
 //
 ////////////////////////////////////////////////////////////
-byte lastRootNoteSelection = NO_NOTE;
 void pollIO()
 {
 	// clock a single bit into the shift register
@@ -730,15 +750,12 @@ void pollIO()
 	// scan for each string
 	for(int i=0;i<16;++i)
 	{	
-		// clock pulse to shift the bit (note that
-		// the first bit does not appear until the
-		// second clock pulse, since we tied shift and store
-		// clock lines together)
+		// clock pulse to shift the bit (the first bit does not appear until the
+		// second clock pulse, since we tied shift and store clock lines together)
 		P_CLK = 0;				
 		P_CLK = 1;
 		
-		// did we get a signal back on any of the 
-		// keyboard scan rows?
+		// did we get a signal back on any of the  keyboard scan rows?
 		if(P_KEYS1 || P_KEYS2 || P_KEYS3)
 		{
 			// Is this the first column with a button held (which provides
@@ -747,16 +764,14 @@ void pollIO()
 			{
 				// This logic allows more buttons to be registered without clearing
 				// old buttons if the root note is unchanged. This is to ensure that
-				// new chord shapes are not accidentally applied as the user releases
-				// the buttons
+				// new chord shapes are not applied as the user releases the buttons
 				chordSelection.rootNote = i;					
 				if(i == lastRootNoteSelection)
 					chordSelection.chordType = lastChordSelection.chordType;
 				chordSelection.chordType |= (P_KEYS1? CHORD_MAJ:CHORD_NONE)|(P_KEYS2? CHORD_MIN:CHORD_NONE)|(P_KEYS3? CHORD_DOM7:CHORD_NONE);					
 			}	
 			// Check for chord extension, which is where an additional
-			// button is held in a column to the right of the root 
-			// column
+			// button is held in a column to the right of the root column
 			else if((options & OPT_ADDNOTES) && (chordSelection.extension == ADD_NONE))
 			{
 				if(P_KEYS1)
@@ -828,6 +843,7 @@ void pollIO()
 		// MODE is pressed, has a chord button been newly pressed?
 		if(lastRootNoteSelection != chordSelection.rootNote)
 		{
+			// Change the mode according to the column
 			switch(chordSelection.rootNote)
 			{
 			case 0: options = patch_BasicStrum; break;
@@ -854,6 +870,7 @@ void pollIO()
 			changeToChord(&chordSelection);	
 	}
 	
+	// remember the root note for this keyboard scan
 	lastRootNoteSelection = chordSelection.rootNote;
 }
 
