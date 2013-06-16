@@ -68,28 +68,23 @@ enum {
 // CONTROLLING FLAGS
 enum {
 	OPT_PLAYONMAKE 			= 0x0001, // start playing a note when stylus makes contact with pad
-	OPT_PLAYONBREAK			= 0x0002, // start playing a note when stylus breaks contact with pad 
-	OPT_DRONE				= 0x0004, // play "drone" chords on 
-	OPT_GUITAR				= 0x0008, 
-	OPT_GUITAR2 			= 0x0010,
-	OPT_SUSTAIN				= 0x0020, 
-	OPT_SUSTAINCOMMON		= 0x0040,
-	OPT_SUSTAINDRONE		= 0x0080,
-	OPT_SUSTAINDRONECOMMON	= 0x0100,
-	OPT_ADDNOTES			= 0x0200, 
-	OPT_OCTAVEPAIR			= 0x0400, 
-	OPT_UNISONPAIR			= 0x0800, 
-	OPT_SPREAD				= 0x1000 
+	OPT_STOPONBREAK 		= 0x0002, 
+	OPT_PLAYONBREAK			= 0x0004, // start playing a note when stylus breaks contact with pad 
+	OPT_STOPONMAKE			= 0x0008, 
+	OPT_DRONE				= 0x0010, // play "drone" chords on 
+	OPT_GUITAR				= 0x0020, 
+	OPT_GUITAR2 			= 0x0040,
+	OPT_GUITARBASSNOTES		= 0x0080,
+	OPT_SUSTAIN				= 0x0100, 
+	OPT_SUSTAINCOMMON		= 0x0200,
+	OPT_SUSTAINDRONE		= 0x0400,
+	OPT_SUSTAINDRONECOMMON	= 0x0800,
+	OPT_ADDNOTES			= 0x1000,
+	OPT_CHROMATIC			= 0x2000
 };
 
-#define OPTIONS_C (OPT_PLAYONBREAK|OPT_ADDNOTES|OPT_SUSTAIN|OPT_SUSTAINCOMMON)
-#define OPTIONS_D (OPT_DRONE|OPT_PLAYONBREAK|OPT_ADDNOTES|OPT_SUSTAIN|OPT_SUSTAINCOMMON)
-#define OPTIONS_E (OPT_PLAYONMAKE|OPT_ADDNOTES|OPT_SUSTAIN|OPT_SUSTAINCOMMON)
-#define OPTIONS_F (OPT_DRONE|OPT_PLAYONMAKE|OPT_ADDNOTES|OPT_SUSTAIN|OPT_SUSTAINCOMMON)
-#define OPTIONS_G (OPT_DRONE|OPT_GUITAR|OPT_SUSTAIN|OPT_PLAYONBREAK|OPT_ADDNOTES)
-#define OPTIONS_A (OPT_GUITAR|OPT_OCTAVEPAIR|OPT_PLAYONBREAK|OPT_ADDNOTES)
 
-unsigned int options = OPT_DRONE|OPT_SUSTAINDRONE|OPT_PLAYONBREAK|OPT_ADDNOTES|OPT_SUSTAIN|OPT_SUSTAINCOMMON;
+
 
 // special note value
 #define NO_NOTE 0xff
@@ -122,6 +117,75 @@ typedef struct
 CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADD_NONE };
 
 
+// Basic strum
+const unsigned int patch_BasicStrum = 
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
+	OPT_SUSTAINCOMMON		;
+
+// Guitar strum
+const unsigned int patch_GuitarStrum = 
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
+	OPT_GUITAR				|
+	OPT_GUITAR2				|
+	OPT_SUSTAINCOMMON		|
+	OPT_ADDNOTES			;
+
+// Guitar sustained
+const unsigned int patch_GuitarSustain = 
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
+	OPT_GUITAR				|
+	OPT_GUITAR2				|
+	OPT_SUSTAIN				|
+	OPT_SUSTAINCOMMON		|
+	OPT_ADDNOTES			;
+
+// Chords and melody
+const unsigned int patch_OrganButtons = 
+	OPT_PLAYONMAKE			|		
+	OPT_STOPONBREAK			|		
+	OPT_SUSTAIN				|
+	OPT_SUSTAINCOMMON		|
+	OPT_DRONE				|
+	OPT_SUSTAINDRONE		|
+	OPT_SUSTAINDRONECOMMON	;
+
+// Chords with adds and melody
+const unsigned int patch_OrganButtonsAddedNotes = 
+	OPT_PLAYONMAKE			|		
+	OPT_STOPONBREAK			|		
+	OPT_SUSTAIN				|
+	OPT_SUSTAINCOMMON		|
+	OPT_DRONE				|
+	OPT_SUSTAINDRONE		|
+	OPT_SUSTAINDRONECOMMON	|
+	OPT_ADDNOTES	;
+
+// Chords and melody
+const unsigned int patch_OrganButtonsAddedNotesRetrig = 
+	OPT_PLAYONMAKE			|		
+	OPT_STOPONBREAK			|		
+	OPT_SUSTAIN				|
+	OPT_SUSTAINCOMMON		|
+	OPT_DRONE				|
+	OPT_SUSTAINDRONE		|
+	OPT_ADDNOTES	;
+
+// Chords and chromatic scale
+const unsigned int patch_OrganButtonsChromatic = 
+	OPT_PLAYONMAKE			|		
+	OPT_STOPONBREAK			|		
+	OPT_CHROMATIC			|
+	OPT_SUSTAIN				|
+	OPT_DRONE				|
+	OPT_SUSTAINDRONE		|
+	OPT_SUSTAINDRONECOMMON	;
+
+unsigned int options = patch_BasicStrum;
+
+
 ////////////////////////////////////////////////////////////
 //
 // BLINK DIAGNOSTIC LED A CERTAIN NUMBER OF TIMES
@@ -129,7 +193,7 @@ CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADD_NONE };
 ////////////////////////////////////////////////////////////
 void blink(int i)
 {
-	while(i-->0)
+	for(;i>0;--i)
 	{
 		P_LED = 1;
 		delay_ms(500);
@@ -206,6 +270,16 @@ void stopNote(byte channel, byte note)
 	P_LED = 0;	
 }
 
+////////////////////////////////////////////////////////////
+//
+// STOP ALL NOTES
+//
+////////////////////////////////////////////////////////////
+void stopAllNotes(byte channel)
+{
+	for(int i=0;i<128;++i)
+		stopNote(channel,i);
+}
 
 ////////////////////////////////////////////////////////////
 //
@@ -214,7 +288,8 @@ void stopNote(byte channel, byte note)
 ////////////////////////////////////////////////////////////
 void guitarCShape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = 43 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[0] = 43 + ofs;
 	chord[1] = 48 + ofs;
 	chord[2] = 52 + ofs + (extension == SUS_4);
 	chord[3] = 55 + ofs + 2 * (extension == ADD_6);
@@ -223,7 +298,8 @@ void guitarCShape(byte ofs, byte extension, byte *chord)
 }
 void guitarC7Shape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = 43 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[0] = 43 + ofs;
 	chord[1] = 48 + ofs;
 	chord[2] = 52 + ofs + (extension == SUS_4);
 	chord[3] = 58 + ofs - (extension == ADD_6);
@@ -232,7 +308,8 @@ void guitarC7Shape(byte ofs, byte extension, byte *chord)
 }
 void guitarAShape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = 40 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[0] = 40 + ofs;
 	chord[1] = 45 + ofs;
 	chord[2] = 52 + ofs + 2 * (extension == ADD_6);
 	chord[3] = 57 + ofs + 2 * (extension == ADD_9);;
@@ -241,7 +318,8 @@ void guitarAShape(byte ofs, byte extension, byte *chord)
 }
 void guitarAmShape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = 40 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[0] = 40 + ofs;
 	chord[1] = 45 + ofs;
 	chord[2] = 52 + ofs + 2 * (extension == ADD_6);
 	chord[3] = 57 + ofs + 2 * (extension == ADD_9);;
@@ -250,7 +328,8 @@ void guitarAmShape(byte ofs, byte extension, byte *chord)
 }
 void guitarA7Shape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = 40 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[0] = 40 + ofs;
 	chord[1] = 45 + ofs;
 	chord[2] = 50 + ofs + 4 * (extension == ADD_6);
 	chord[3] = 57 + ofs + 2 * (extension == ADD_9);;
@@ -259,8 +338,8 @@ void guitarA7Shape(byte ofs, byte extension, byte *chord)
 }
 void guitarDShape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = NO_NOTE;
-	chord[1] = 45 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[1] = 45 + ofs;
 	chord[2] = 50 + ofs;
 	chord[3] = 57 + ofs + 2 * (extension == ADD_6);
 	chord[4] = 62 + ofs;
@@ -268,8 +347,8 @@ void guitarDShape(byte ofs, byte extension, byte *chord)
 }
 void guitarDmShape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = NO_NOTE;
-	chord[1] = 45 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[1] = 45 + ofs;
 	chord[2] = 50 + ofs;
 	chord[3] = 57 + ofs + 2 * (extension == ADD_6);
 	chord[4] = 62 + ofs;
@@ -277,8 +356,8 @@ void guitarDmShape(byte ofs, byte extension, byte *chord)
 }
 void guitarD7Shape(byte ofs, byte extension, byte *chord)
 {
-	chord[0] = NO_NOTE;
-	chord[1] = 45 + ofs;
+	if(options & OPT_GUITARBASSNOTES)
+		chord[1] = 45 + ofs;
 	chord[2] = 50 + ofs;
 	chord[3] = 57 + ofs + 2 * (extension == ADD_6);
 	chord[4] = 60 + ofs;
@@ -326,12 +405,10 @@ void guitarGShape(byte ofs, byte extension, byte *chord)
 // MAKE A GUITAR CHORD 
 //
 ////////////////////////////////////////////////////////////
-byte guitarChord(CHORD_SELECTION *pChordSelection, byte *result)
+byte guitarChord(CHORD_SELECTION *pChordSelection, byte transpose, byte *chord)
 {	
 	int i;
-	for(i=0;i<16;++i)
-		result[i] = NO_NOTE;
-	byte chord[6];
+	memset(chord, NO_NOTE, 16);
 	switch(pChordSelection->chordType)
 	{
 		case CHORD_MAJ:
@@ -387,15 +464,10 @@ byte guitarChord(CHORD_SELECTION *pChordSelection, byte *result)
 			break;
 		default:
 			return 0;
-	}
-	
-	for(i=0;i<6;++i)
-	{
-		if(chord[i] == NO_NOTE)
-			result[i] = NO_NOTE;
-		else			
-			result[i]=chord[i]+12;
-	}
+	}	
+	for(i=0;i<16;++i)
+		if(chord[i] != NO_NOTE)
+			chord[i] += transpose;
 	return 6;
 }
 
@@ -404,7 +476,7 @@ byte guitarChord(CHORD_SELECTION *pChordSelection, byte *result)
 // MAKE A CHORD BY "STACKING TRIADS"
 //
 ////////////////////////////////////////////////////////////
-byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte *chord)
+byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose, byte *chord)
 {
 	byte struc[5];
 	byte len = 0;
@@ -463,7 +535,7 @@ byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte *chord)
 	}
 
 	// fill the chord array with MIDI notes
-	byte root = pChordSelection->rootNote + 36;
+	byte root = pChordSelection->rootNote + transpose;
 	int from = 0;
 	int to = 0;
 	while(to < 16)
@@ -516,18 +588,21 @@ void playChordNotes(byte *oldNotes, byte *newNotes, byte channel, byte velocity,
 	}
 	
 	// Now play notes which are not already playing
-	for(i=0;i<16;++i)
-	{		
-		if(NO_NOTE != newNotes[i])
-		{
-			for(j=0;j<16;++j)
+	if(velocity)
+	{
+		for(i=0;i<16;++i)
+		{		
+			if(NO_NOTE != newNotes[i])
 			{
-				if(oldNotes[j] == newNotes[i])
-					break;
-			}
-			if(j==16)
-			{
-				startNote(channel, newNotes[i], velocity);
+				for(j=0;j<16;++j)
+				{
+					if(oldNotes[j] == newNotes[i])
+						break;
+				}
+				if(j==16)
+				{
+					startNote(channel, newNotes[i], velocity);
+				}
 			}
 		}
 	}
@@ -571,12 +646,13 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 	int i,j;
 	byte chord[16];
 	byte chordLen;
-	
+	byte notes[16];
+		
 	// is the new chord a "no chord"
 	if(CHORD_NONE == pChordSelection->chordType)
 	{
-		releaseChordNotes(playNotes, playChannel, (options & OPT_SUSTAIN));
-		releaseChordNotes(droneNotes, droneChannel, (options & OPT_SUSTAINDRONE));		
+		releaseChordNotes(playNotes, playChannel, !!(options & OPT_SUSTAIN));
+		releaseChordNotes(droneNotes, droneChannel, !!(options & OPT_SUSTAINDRONE));		
 	}
 	else 	
 	{
@@ -586,10 +662,10 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		{
 			// build the guitar chord, using stacked triads
 			// as a fallback if there is no chord mapping
-			chordLen = guitarChord(pChordSelection, chord);
+			chordLen = guitarChord(pChordSelection, 12, chord);
 			if(!chordLen)
 			{
-				stackTriads(pChordSelection, -1, chord);
+				stackTriads(pChordSelection, -1, 60, chord);
 				chordLen = 6;
 			}
 				
@@ -597,63 +673,34 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 			if(options & OPT_GUITAR2)
 			{
 				for(i=0;i<6;++i)
-					chord[10+i] = 12+chord[i];
+					if(chord[i] != NO_NOTE)
+						chord[10+i] = 12+chord[i];
 				chordLen = 16;
 			}
 		}
-		else
+		else if(options & OPT_CHROMATIC)
+		{
+			// chromatic scale
+			for(i=0;i<16;++i)
+				chord[i] = 48+i;
+			chordLen=16;
+		}
+		else	
 		{
 			// stack triads
-			chordLen = stackTriads(pChordSelection, -1, chord);
+			chordLen = stackTriads(pChordSelection, -1, 36, chord);
 		}
 	
-	
-		// map the new chord to the 16 strings
-		int getPos =0;
-		for(i=0;i<16;)
-		{
-			if(getPos >= chordLen)
-			{
-				// no more notes in the chord... padding
-				playNotes[i++] = NO_NOTE;
-			}
-			else
-			{
-				// store the next note
-				playNotes[i++] = chord[getPos];
-	
-				// add a blank space?
-				if(!!(options & OPT_SPREAD) && i<16)
-				{
-					playNotes[i++] = NO_NOTE;
-				}
-				
-				// pair octaves?
-				if(!!(options & (OPT_OCTAVEPAIR|OPT_UNISONPAIR)) && i<16)
-				{				
-					if(options & OPT_OCTAVEPAIR)
-					{
-						playNotes[i++] = 12 + chord[getPos];
-					}
-					else
-					{
-						playNotes[i++] = chord[getPos];
-					}
-					
-					if(!!(options & OPT_SPREAD) && i<16)
-					{
-						playNotes[i++] = NO_NOTE;
-					}
-				}				
-				++getPos;
-			}
-		}
-		playChordNotes(playNotes, chord, playChannel, playVelocity, (options & OPT_SUSTAINCOMMON));
+		// copy chord to notes and pad with null notes
+		memset(notes, NO_NOTE, 16);
+		memcpy(notes, chord, chordLen);
+		playChordNotes(playNotes, notes, playChannel, 0, !!(options & OPT_SUSTAINCOMMON));
 
+		// deal with drone
 		if(options & OPT_DRONE)
 		{
-			stackTriads(pChordSelection, 1, chord);
-			playChordNotes(droneNotes, chord, droneChannel, droneVelocity, (options & OPT_SUSTAINDRONECOMMON));
+			stackTriads(pChordSelection, 1, 36, notes);
+			playChordNotes(droneNotes, notes, droneChannel, droneVelocity, !!(options & OPT_SUSTAINDRONECOMMON));
 		}
 	}
 	lastChordSelection = *pChordSelection;
@@ -694,38 +741,30 @@ void pollIO()
 		// keyboard scan rows?
 		if(P_KEYS1 || P_KEYS2 || P_KEYS3)
 		{
-			// is the mode button pressed?
-			if(!P_MODE)
+			// Is this the first column with a button held (which provides
+			// the root note)?
+			if(chordSelection.rootNote == NO_NOTE)
 			{
-				//
-			}
-			else
-			{				
-				// Is this the first column with a button held (which provides
-				// the root note)?
-				if(chordSelection.rootNote == NO_NOTE)
-				{
-					// This logic allows more buttons to be registered without clearing
-					// old buttons if the root note is unchanged. This is to ensure that
-					// new chord shapes are not accidentally applied as the user releases
-					// the buttons
-					chordSelection.rootNote = i;					
-					if(i == lastRootNoteSelection)
-						chordSelection.chordType = lastChordSelection.chordType;
-					chordSelection.chordType |= (P_KEYS1? CHORD_MAJ:CHORD_NONE)|(P_KEYS2? CHORD_MIN:CHORD_NONE)|(P_KEYS3? CHORD_DOM7:CHORD_NONE);					
-				}	
-				// Check for chord extension, which is where an additional
-				// button is held in a column to the right of the root 
-				// column
-				else if((options & OPT_ADDNOTES) && (chordSelection.extension == ADD_NONE))
-				{
-					if(P_KEYS1)
-						chordSelection.extension = SUS_4;
-					else if(P_KEYS2)
-						chordSelection.extension = ADD_6;
-					else if(P_KEYS3)
-						chordSelection.extension = ADD_9;
-				}
+				// This logic allows more buttons to be registered without clearing
+				// old buttons if the root note is unchanged. This is to ensure that
+				// new chord shapes are not accidentally applied as the user releases
+				// the buttons
+				chordSelection.rootNote = i;					
+				if(i == lastRootNoteSelection)
+					chordSelection.chordType = lastChordSelection.chordType;
+				chordSelection.chordType |= (P_KEYS1? CHORD_MAJ:CHORD_NONE)|(P_KEYS2? CHORD_MIN:CHORD_NONE)|(P_KEYS3? CHORD_DOM7:CHORD_NONE);					
+			}	
+			// Check for chord extension, which is where an additional
+			// button is held in a column to the right of the root 
+			// column
+			else if((options & OPT_ADDNOTES) && (chordSelection.extension == ADD_NONE))
+			{
+				if(P_KEYS1)
+					chordSelection.extension = SUS_4;
+				else if(P_KEYS2)
+					chordSelection.extension = ADD_6;
+				else if(P_KEYS3)
+					chordSelection.extension = ADD_9;
 			}
 		}
 
@@ -755,6 +794,7 @@ void pollIO()
 					if(options & OPT_PLAYONMAKE)
 						startNote(playChannel, playNotes[i],  playVelocity);						
 					else
+					if(options & OPT_STOPONMAKE)
 						stopNote(playChannel, playNotes[i]);						
 				}
 			}
@@ -773,6 +813,7 @@ void pollIO()
 				if(options & OPT_PLAYONBREAK)
 					startNote(playChannel, playNotes[i],  playVelocity);						
 				else
+				if(options & OPT_STOPONBREAK)
 					stopNote(playChannel, playNotes[i]);						
 			}
 		}	
@@ -781,14 +822,41 @@ void pollIO()
 		b<<=1;		
 	}	
 		
-	lastRootNoteSelection = chordSelection.rootNote;
+
+	if(!P_MODE)
+	{		
+		// MODE is pressed, has a chord button been newly pressed?
+		if(lastRootNoteSelection != chordSelection.rootNote)
+		{
+			switch(chordSelection.rootNote)
+			{
+			case 0: options = patch_BasicStrum; break;
+			case 2: options = patch_GuitarStrum; break;
+			case 4: options = patch_GuitarSustain; break;
+			case 5: options = patch_OrganButtons; break;
+			case 7: options = patch_OrganButtonsAddedNotes; break;
+			case 9: options = patch_OrganButtonsAddedNotesRetrig; break;
+			case 11:
+				// MIDI Panic
+				stopAllNotes(playChannel);
+				if(options & OPT_DRONE)
+					stopAllNotes(droneChannel);
+				break;
+			}
+		}
+	}
+	else
+	{
+		// has the chord changed? note that if the stylus is bridging 2 strings we will not change
+		// the chord selection. This is because this situation can confuse the keyboard matrix
+		// causing unwanted chord changed
+		if((stringCount < 2) && 0 != memcmp(&chordSelection, &lastChordSelection, sizeof(CHORD_SELECTION)))
+			changeToChord(&chordSelection);	
+	}
 	
-	// has the chord changed? note that if the stylus is bridging 2 strings we will not change
-	// the chord selection. This is because this situation can confuse the keyboard matrix
-	// causing unwanted chord changed
-	if((stringCount < 2) && 0 != memcmp(&chordSelection, &lastChordSelection, sizeof(CHORD_SELECTION)))
-		changeToChord(&chordSelection);	
+	lastRootNoteSelection = chordSelection.rootNote;
 }
+
 
 ////////////////////////////////////////////////////////////
 //
@@ -813,11 +881,11 @@ void main()
     
 	ansela = 0b00000000;
 	anselc = 0b00000000;
-      
+
+	
 	// initialise MIDI comms
 	init_usart();
-
-    blink(2);
+    blink(1);
 
 	// initialise the notes array
 	memset(playNotes,NO_NOTE,sizeof(playNotes));
