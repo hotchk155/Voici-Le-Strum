@@ -12,7 +12,11 @@
 //    SOURCEBOOST C FOR PIC16F1825
 //
 // Ver  Date 
-// 1.00 16Jun2013 Initial baseline release for new PCB
+// 1.0 16Jun2013 Initial baseline release for new PCB
+// 1.1 
+//
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 1
 //
 ////////////////////////////////////////////////////////////
 
@@ -159,8 +163,8 @@ const unsigned int patch_GuitarSustain =
 
 // Chords and melody
 const unsigned int patch_OrganButtons = 
-	OPT_PLAYONMAKE			|		
-	OPT_STOPONBREAK			|		
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
 	OPT_SUSTAIN				|
 	OPT_SUSTAINCOMMON		|
 	OPT_DRONE				|
@@ -169,8 +173,8 @@ const unsigned int patch_OrganButtons =
 
 // Chords with adds and melody
 const unsigned int patch_OrganButtonsAddedNotes = 
-	OPT_PLAYONMAKE			|		
-	OPT_STOPONBREAK			|		
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
 	OPT_SUSTAIN				|
 	OPT_SUSTAINCOMMON		|
 	OPT_DRONE				|
@@ -180,8 +184,8 @@ const unsigned int patch_OrganButtonsAddedNotes =
 
 // Chords and melody
 const unsigned int patch_OrganButtonsAddedNotesRetrig = 
-	OPT_PLAYONMAKE			|		
-	OPT_STOPONBREAK			|		
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
 	OPT_SUSTAIN				|
 	OPT_SUSTAINCOMMON		|
 	OPT_DRONE				|
@@ -190,8 +194,8 @@ const unsigned int patch_OrganButtonsAddedNotesRetrig =
 
 // Chords and chromatic scale
 const unsigned int patch_OrganButtonsChromatic = 
-	OPT_PLAYONMAKE			|		
-	OPT_STOPONBREAK			|		
+	OPT_PLAYONBREAK			|		
+	OPT_STOPONMAKE			|		
 	OPT_CHROMATIC			|
 	OPT_SUSTAIN				|
 	OPT_DRONE				|
@@ -338,7 +342,7 @@ void guitarAmShape(byte ofs, byte extension, byte *chord)
 	chord[1] = 45 + ofs;
 	chord[2] = 52 + ofs + 2 * (extension == ADD_6);
 	chord[3] = 57 + ofs + 2 * (extension == ADD_9);;
-	chord[4] = 60 + ofs  + (extension == SUS_4);
+	chord[4] = 60 + ofs  + 2 * (extension == SUS_4);
 	chord[5] = 64 + ofs;
 }
 void guitarA7Shape(byte ofs, byte extension, byte *chord)
@@ -346,9 +350,9 @@ void guitarA7Shape(byte ofs, byte extension, byte *chord)
 	if(options & OPT_GUITARBASSNOTES)
 		chord[0] = 40 + ofs;
 	chord[1] = 45 + ofs;
-	chord[2] = 50 + ofs + 4 * (extension == ADD_6);
-	chord[3] = 57 + ofs + 2 * (extension == ADD_9);;
-	chord[4] = 60 + ofs  + (extension == SUS_4);
+	chord[2] = 52 + ofs + 2 * (extension == ADD_6);
+	chord[3] = 55 + ofs + 4 * (extension == ADD_9);;
+	chord[4] = 61 + ofs + (extension == SUS_4);
 	chord[5] = 64 + ofs;
 }
 void guitarDShape(byte ofs, byte extension, byte *chord)
@@ -367,7 +371,7 @@ void guitarDmShape(byte ofs, byte extension, byte *chord)
 	chord[2] = 50 + ofs;
 	chord[3] = 57 + ofs + 2 * (extension == ADD_6);
 	chord[4] = 62 + ofs;
-	chord[5] = 65 + ofs  + (extension == SUS_4) - (extension == ADD_9);
+	chord[5] = 65 + ofs  + 2 * (extension == SUS_4) - (extension == ADD_9);
 }
 void guitarD7Shape(byte ofs, byte extension, byte *chord)
 {
@@ -392,7 +396,7 @@ void guitarEmShape(byte ofs, byte extension, byte *chord)
 	chord[0] = 40 + ofs;
 	chord[1] = 47 + ofs;
 	chord[2] = 52 + ofs + 2 * (extension == ADD_9);
-	chord[3] = 55 + ofs  + (extension == SUS_4);
+	chord[3] = 55 + ofs  + 2 * (extension == SUS_4);
 	chord[4] = 59 + ofs + 2 * (extension == ADD_6);
 	chord[5] = 64 + ofs;
 }
@@ -490,7 +494,7 @@ byte guitarChord(CHORD_SELECTION *pChordSelection, byte transpose, byte *chord)
 // MAKE A CHORD BY "STACKING TRIADS"
 //
 ////////////////////////////////////////////////////////////
-byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose, byte *chord)
+byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose, byte size, byte *chord)
 {
 	byte struc[5];
 	byte len = 0;
@@ -511,7 +515,7 @@ byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose,
 		switch(pChordSelection->chordType)		
 		{		
 			// minor 3rd
-		case CHORD_MIN: case CHORD_MIN7: case CHORD_AUG: case CHORD_DIM: // minor 3rd
+		case CHORD_MIN: case CHORD_MIN7: case CHORD_DIM: // minor 3rd
 			struc[len++] = 3;
 			break;
 		default: // major 3rd
@@ -552,7 +556,7 @@ byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose,
 	byte root = pChordSelection->rootNote + transpose;
 	int from = 0;
 	int to = 0;
-	while(to < 16)
+	while(to < size)
 	{
 		chord[to++] = root+struc[from];		
 		if(++from >= len)
@@ -680,7 +684,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 			chordLen = guitarChord(pChordSelection, 12, chord);
 			if(!chordLen)
 			{
-				stackTriads(pChordSelection, -1, 60, chord);
+				stackTriads(pChordSelection, -1, 60, 6, chord);
 				chordLen = 6;
 			}
 				
@@ -703,7 +707,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		else	
 		{
 			// stack triads
-			stackTriads(pChordSelection, -1, 36, chord);
+			stackTriads(pChordSelection, -1, 36, 16, chord);
 			chordLen = 16;
 		}
 	
@@ -718,7 +722,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		if(options & OPT_DRONE)
 		{
 			// for the drone chord we only play the triad (not stacked)
-			stackTriads(pChordSelection, 1, 36, notes);
+			stackTriads(pChordSelection, 1, 36, 16, notes);
 			playChordNotes(droneNotes, notes, droneChannel, droneVelocity, !!(options & OPT_SUSTAINDRONECOMMON));
 		}
 	}
@@ -874,6 +878,31 @@ void pollIO()
 	lastRootNoteSelection = chordSelection.rootNote;
 }
 
+void showVersion()
+{
+	int i;
+	for(i=0;i<VERSION_MAJOR;++i)
+	{
+		P_LED = 1;
+		delay_s(1);
+		P_LED = 0;
+		delay_ms(250);
+	}
+	P_LED = 1; 
+	delay_ms(10);	
+	P_LED = 0;
+	delay_ms(250);
+	for(i=0;i<VERSION_MINOR;++i)
+	{
+		P_LED = 1;
+		delay_s(1);
+		P_LED = 0;
+		delay_ms(250);
+	}
+	P_LED = 1; 
+	delay_ms(10);	
+	P_LED = 0;
+}
 
 ////////////////////////////////////////////////////////////
 //
@@ -899,10 +928,13 @@ void main()
 	ansela = 0b00000000;
 	anselc = 0b00000000;
 
+	if(!P_MODE)
+	{
+		showVersion();
+	}
 	
 	// initialise MIDI comms
 	init_usart();
-    blink(1);
 
 	// initialise the notes array
 	memset(playNotes,NO_NOTE,sizeof(playNotes));
