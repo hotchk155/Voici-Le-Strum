@@ -4,6 +4,9 @@ Target=PIC16F1825
 Active Config=Release
 Active Directory=C:\Dev\GitHub\Voici-Le-Strum\src\
 Config=0
+Type=0
+Warnings=1
+Model=0
 [Files]
 File0=StrumController.c
 Count=1
@@ -20,3 +23,9 @@ Bcd=706F727462000000000000000000
 Count=0
 [Breakpoints]
 Count=0
+[Tools]
+BoostDir=C:\Program Files (x86)\SourceBoost\
+Programmer=
+PrefixWithBuildThreadNum=0
+[Debugger]
+DebugFromMain=1

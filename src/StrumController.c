@@ -23,6 +23,7 @@
 // INCLUDE FILES
 #include <system.h>
 #include <memory.h>
+#include <eeprom.h>
 
 // PIC CONFIG
 #pragma DATA _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF &_CLKOUTEN_OFF
@@ -204,26 +205,77 @@ const unsigned int patch_OrganButtonsChromatic =
 	OPT_SUSTAINDRONE		|
 	OPT_SUSTAINDRONECOMMON	;
 
-// Selected patch
-unsigned int options = 	OPT_PLAYONBREAK			|			OPT_STOPONMAKE			|		OPT_CHROMATIC;
 
-
-//unsigned int options = patch_BasicStrum;
+unsigned int options = patch_BasicStrum;
 
 ////////////////////////////////////////////////////////////
 //
-// BLINK DIAGNOSTIC LED A CERTAIN NUMBER OF TIMES
+// TOGGLE A USER OPTION
 //
 ////////////////////////////////////////////////////////////
-void blink(int i)
+void toggleOption(unsigned long o)
 {
-	for(;i>0;--i)
+	if(options & o)
 	{
+		options &= ~o;
 		P_LED = 1;
-		delay_ms(500);
+		delay_ms(10);
 		P_LED = 0;
-		delay_ms(500);
 	}
+	else
+	{
+		options |= o;
+		P_LED = 1;
+		delay_ms(10);
+		P_LED = 0;
+		delay_ms(100);
+		P_LED = 1;
+		delay_ms(10);
+		P_LED = 0;
+	}
+}
+
+////////////////////////////////////////////////////////////
+//
+// CLEAR USER OPTION
+//
+////////////////////////////////////////////////////////////
+void clearOptions(unsigned long o)
+{
+	options &= ~o;
+}
+
+////////////////////////////////////////////////////////////
+//
+// LOAD USER OPTIONS FROM EEPROM
+//
+////////////////////////////////////////////////////////////
+void loadUserOptions()
+{
+	// 123 is a magic cookie which tells us the user
+	// patch is initialised
+	if(eeprom_read(0) != 123)
+		options = patch_BasicStrum;
+	else
+		options = (unsigned int)eeprom_read(1)<<8 | (unsigned int)eeprom_read(2);
+	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
+	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
+	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
+}
+
+////////////////////////////////////////////////////////////
+//
+// SAVE USER OPTIONS TO EEPROM
+//
+////////////////////////////////////////////////////////////
+void saveUserOptions()
+{
+	eeprom_write(0, 123);
+	eeprom_write(1, (options >> 8) & 0xff);
+	eeprom_write(2, options & 0xff);
+	P_LED = 1;
+	delay_s(2);
+	P_LED = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -773,7 +825,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 	
 }
 
-				
+	
 ////////////////////////////////////////////////////////////
 //
 // POLL INPUT AND MANAGE THE SENDING OF MIDI INFO
@@ -888,22 +940,57 @@ void pollIO()
 		// MODE is pressed, has a chord button been newly pressed?
 		if(lastRootNoteSelection != chordSelection.rootNote)
 		{
-			// Change the mode according to the column
-			switch(chordSelection.rootNote)
+			switch(chordSelection.chordType)
 			{
-			case 0: options = patch_BasicStrum; break;
-			case 2: options = patch_GuitarStrum; break;
-			case 4: options = patch_GuitarSustain; break;
-			case 5: options = patch_OrganButtons; break;
-			case 7: options = patch_OrganButtonsAddedNotes; break;
-			case 9: options = patch_OrganButtonsAddedNotesRetrig; break;
-			case 11:
-				// MIDI Panic
-				stopAllNotes(playChannel);
-				if(options & OPT_DRONE)
-					stopAllNotes(droneChannel);
+			case CHORD_MAJ: // ROW 1
+				switch(chordSelection.rootNote)
+				{
+				case 0: options = patch_BasicStrum; break;
+				case 2: options = patch_GuitarStrum; break;
+				case 4: options = patch_GuitarSustain; break;
+				case 5: options = patch_OrganButtons; break;
+				case 7: options = patch_OrganButtonsAddedNotes; break;
+				case 9: options = patch_OrganButtonsAddedNotesRetrig; break;
+				case 11:
+					// MIDI Panic
+					stopAllNotes(playChannel);
+					if(options & OPT_DRONE)
+						stopAllNotes(droneChannel);
+					break;
+				}
 				break;
-			}
+			case CHORD_MIN: // ROW 2
+				switch(chordSelection.rootNote)
+				{
+				case 0: toggleOption(OPT_PLAYONMAKE); break;
+				case 1: toggleOption(OPT_PLAYONBREAK); break;
+				case 2: toggleOption(OPT_GUITAR); break;
+				case 3: toggleOption(OPT_ADDNOTES); break;
+				case 4: toggleOption(OPT_SUSTAIN); break;
+				case 5: toggleOption(OPT_CHROMATIC); clearOptions(OPT_DIATONIC|OPT_PENTATONIC); break;
+				case 9: toggleOption(OPT_DRONE); break;
+				case 10: toggleOption(OPT_SUSTAINDRONE); break;
+				case 11: saveUserOptions(); break;
+				}
+				break;
+	
+	
+				
+			case CHORD_DOM7: // ROW3
+				switch(chordSelection.rootNote)
+				{
+				case 0: toggleOption(OPT_STOPONBREAK); break;
+				case 1: toggleOption(OPT_STOPONMAKE); break;
+				case 2: toggleOption(OPT_GUITAR2); break;
+				case 3: toggleOption(OPT_GUITARBASSNOTES); break;
+				case 4: toggleOption(OPT_SUSTAINCOMMON); break;
+				case 5: toggleOption(OPT_DIATONIC); clearOptions(OPT_CHROMATIC|OPT_PENTATONIC); break;
+				case 6: toggleOption(OPT_PENTATONIC); clearOptions(OPT_DIATONIC|OPT_CHROMATIC); break;
+				case 10: toggleOption(OPT_SUSTAINDRONECOMMON); break;
+				case 11: loadUserOptions(); break;
+				}
+				break;		
+			}	
 		}
 	}
 	else
@@ -972,6 +1059,12 @@ void main()
 	if(!P_MODE)
 	{
 		showVersion();
+	}
+	else
+	{
+		P_LED = 1;
+		delay_ms(100);
+		P_LED = 0;
 	}
 	
 	// initialise MIDI comms
