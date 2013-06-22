@@ -280,6 +280,19 @@ void saveUserOptions()
 
 ////////////////////////////////////////////////////////////
 //
+// PRESET PATCH
+//
+////////////////////////////////////////////////////////////
+void presetPatch(unsigned int o)
+{
+	options = o;
+	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
+	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
+	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
+}
+
+////////////////////////////////////////////////////////////
+//
 // INITIALISE SERIAL PORT FOR MIDI
 //
 ////////////////////////////////////////////////////////////
@@ -945,18 +958,13 @@ void pollIO()
 			case CHORD_MAJ: // ROW 1
 				switch(chordSelection.rootNote)
 				{
-				case 0: options = patch_BasicStrum; break;
-				case 2: options = patch_GuitarStrum; break;
-				case 4: options = patch_GuitarSustain; break;
-				case 5: options = patch_OrganButtons; break;
-				case 7: options = patch_OrganButtonsAddedNotes; break;
-				case 9: options = patch_OrganButtonsAddedNotesRetrig; break;
-				case 11:
-					// MIDI Panic
-					stopAllNotes(playChannel);
-					if(options & OPT_DRONE)
-						stopAllNotes(droneChannel);
-					break;
+				case 0: presetPatch(patch_BasicStrum); break;
+				case 2: presetPatch(patch_GuitarStrum); break;
+				case 4: presetPatch(patch_GuitarSustain); break;
+				case 5: presetPatch(patch_OrganButtons); break;
+				case 7: presetPatch(patch_OrganButtonsAddedNotes); break;
+				case 9: presetPatch(patch_OrganButtonsAddedNotesRetrig); break;
+				case 11: loadUserOptions(); break;
 				}
 				break;
 			case CHORD_MIN: // ROW 2
@@ -979,15 +987,20 @@ void pollIO()
 			case CHORD_DOM7: // ROW3
 				switch(chordSelection.rootNote)
 				{
-				case 0: toggleOption(OPT_STOPONBREAK); break;
-				case 1: toggleOption(OPT_STOPONMAKE); break;
+				case 0: toggleOption(OPT_STOPONMAKE); break;
+				case 1: toggleOption(OPT_STOPONBREAK); break;
 				case 2: toggleOption(OPT_GUITAR2); break;
 				case 3: toggleOption(OPT_GUITARBASSNOTES); break;
 				case 4: toggleOption(OPT_SUSTAINCOMMON); break;
 				case 5: toggleOption(OPT_DIATONIC); clearOptions(OPT_CHROMATIC|OPT_PENTATONIC); break;
 				case 6: toggleOption(OPT_PENTATONIC); clearOptions(OPT_DIATONIC|OPT_CHROMATIC); break;
 				case 10: toggleOption(OPT_SUSTAINDRONECOMMON); break;
-				case 11: loadUserOptions(); break;
+				case 11:
+					// MIDI Panic
+					stopAllNotes(playChannel);
+					if(options & OPT_DRONE)
+						stopAllNotes(droneChannel);
+					break;
 				}
 				break;		
 			}	
