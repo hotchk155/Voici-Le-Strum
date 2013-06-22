@@ -91,7 +91,9 @@ enum {
 	OPT_SUSTAINDRONE		= 0x0400, // do not kill drone chord when chord button is released
 	OPT_SUSTAINDRONECOMMON	= 0x0800, // when switching to a new chord, allow common notes to sustain (do not retrig) on drone chord
 	OPT_ADDNOTES			= 0x1000, // enable adding of sus4, add6, add9 to chord
-	OPT_CHROMATIC			= 0x2000  // map strings to chromatic scale from C instead of chord
+	OPT_CHROMATIC			= 0x2000, // map strings to chromatic scale from C instead of chord
+	OPT_DIATONIC			= 0x4000, // map strings to diatonic major scale 
+	OPT_PENTATONIC			= 0x8000  // map strings to pentatonic scale 
 };
 
 // Byte type
@@ -203,8 +205,10 @@ const unsigned int patch_OrganButtonsChromatic =
 	OPT_SUSTAINDRONECOMMON	;
 
 // Selected patch
-unsigned int options = patch_BasicStrum;
+unsigned int options = 	OPT_PLAYONBREAK			|			OPT_STOPONMAKE			|		OPT_CHROMATIC;
 
+
+//unsigned int options = patch_BasicStrum;
 
 ////////////////////////////////////////////////////////////
 //
@@ -572,6 +576,29 @@ byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose,
 
 ////////////////////////////////////////////////////////////
 //
+// MAKE A SCALE BY MASKING NOTES
+//
+////////////////////////////////////////////////////////////
+byte makeScale(int root, byte transpose, unsigned long mask, byte *chord)
+{
+	memset(chord,NO_NOTE,16);
+	unsigned long b = 0;
+	while(root < transpose + 16)
+	{
+			//       210987654321
+		if(!b) b = 0b100000000000;		
+		if(mask & b)
+		{
+			if(root >= transpose)
+				chord[root - transpose] = root;
+		}
+		++root;
+		b>>=1;
+	}	
+}
+
+////////////////////////////////////////////////////////////
+//
 // START PLAYING THE NOTES OF THE NEW CHORD
 //
 ////////////////////////////////////////////////////////////
@@ -700,8 +727,22 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		// should we have a chromatic scale mapped to the strings?
 		else if(options & OPT_CHROMATIC)
 		{
-			for(i=0;i<16;++i)
-				chord[i] = 48+i;
+			makeScale(pChordSelection->rootNote, 48, 0b111111111111, chord);
+			chordLen=16;
+		}
+		// diatonic major or minor
+		else if(options & OPT_DIATONIC)
+		{
+			if((pChordSelection->chordType == CHORD_MIN)||(pChordSelection->chordType == CHORD_MIN7))
+				makeScale(pChordSelection->rootNote, 48, 0b101101011010, chord);
+			else
+				makeScale(pChordSelection->rootNote, 48, 0b101011010101, chord);
+			chordLen=16;
+		}
+		// pentatonic 
+		else if(options & OPT_PENTATONIC)
+		{
+			makeScale(pChordSelection->rootNote, 48, 0b101010010100, chord);
 			chordLen=16;
 		}
 		else	
