@@ -5,7 +5,7 @@ R3, R5, R6, R7 		- 10K resistor (x4)
 C1, C2, C3, C4, C7	- 100nF Ceramic Capacitor 2.5mm pitch (x5)
 C5, C6				- 10UF 16V electrolytic cap (x2)
 
-D1					- 1N4004 Rectifier Diode
+D1					- 1N4001 Rectifier Diode
 D2 - D17			- 1N4148 Small Signal Diode (x16)
 
 REG1     			- 78L05Z +5V Regulator TO92
