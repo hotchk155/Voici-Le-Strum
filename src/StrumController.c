@@ -13,10 +13,11 @@
 //
 // Ver  Date 
 // 1.0 16Jun2013 Initial baseline release for new PCB
-// 1.1 
+// 1.1 23Jun2013 First release
+// 1.2 02Jul2013 Reverse Strum Mode Added
 //
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 1
+#define VERSION_MINOR 2
 //
 ////////////////////////////////////////////////////////////
 
@@ -40,6 +41,15 @@
 #define P_KEYS3	 		portc.3
 #define P_MODE	 		portc.5
 //portc.4 = TX
+
+// special EEPROM addresses
+#define EEPROM_ADDR_MAGIC_COOKIE 0
+#define EEPROM_ADDR_OPTIONS_HIGH 1
+#define EEPROM_ADDR_OPTIONS_LOW 2
+#define EEPROM_ADDR_REV_STRUM 3
+
+// special token used to indicate initialised eeprom
+#define EEPROM_MAGIC_COOKIE 123
 
 // CHORD SHAPES
 enum {
@@ -207,6 +217,7 @@ const unsigned int patch_OrganButtonsChromatic =
 
 
 unsigned int options = patch_BasicStrum;
+byte reverseStrum = 0;
 
 ////////////////////////////////////////////////////////////
 //
@@ -254,10 +265,12 @@ void loadUserOptions()
 {
 	// 123 is a magic cookie which tells us the user
 	// patch is initialised
-	if(eeprom_read(0) != 123)
+	if(eeprom_read(EEPROM_ADDR_MAGIC_COOKIE) != EEPROM_MAGIC_COOKIE)
 		options = patch_BasicStrum;
 	else
-		options = (unsigned int)eeprom_read(1)<<8 | (unsigned int)eeprom_read(2);
+		options = 
+				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_HIGH)<<8 | 
+				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_LOW);
 	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
 	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
 	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
@@ -270,12 +283,22 @@ void loadUserOptions()
 ////////////////////////////////////////////////////////////
 void saveUserOptions()
 {
-	eeprom_write(0, 123);
-	eeprom_write(1, (options >> 8) & 0xff);
-	eeprom_write(2, options & 0xff);
-	P_LED = 1;
-	delay_s(2);
-	P_LED = 0;
+	eeprom_write(EEPROM_ADDR_MAGIC_COOKIE, EEPROM_MAGIC_COOKIE);
+	eeprom_write(EEPROM_ADDR_OPTIONS_HIGH, (options >> 8) & 0xff);
+	eeprom_write(EEPROM_ADDR_OPTIONS_LOW, options & 0xff);
+	P_LED = 1;	delay_s(2);	P_LED = 0;
+}
+
+////////////////////////////////////////////////////////////
+//
+// TOGGLE STRUM DIRECTION SETTING
+//
+////////////////////////////////////////////////////////////
+byte toggleStrumDirection()
+{
+	reverseStrum = !reverseStrum;
+	eeprom_write(EEPROM_ADDR_REV_STRUM, reverseStrum);
+	P_LED = 1; delay_s(2);	P_LED = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -859,7 +882,9 @@ void pollIO()
 	
 	// scan for each string
 	for(int i=0;i<16;++i)
-	{	
+	{			
+		int whichString = reverseStrum? (15-i) : i;
+		
 		// clock pulse to shift the bit (the first bit does not appear until the
 		// second clock pulse, since we tied shift and store clock lines together)
 		P_CLK = 0;				
@@ -897,7 +922,7 @@ void pollIO()
 		if(!P_MODE)
 		{
 			if(P_STYLUS)
-				playVelocity = 0x0f | (i<<4);
+				playVelocity = 0x0f | (whichString<<4);
 		}
 		// otherwise check whether we got a signal back from the stylus (meaning that
 		// it's touching this string)
@@ -913,14 +938,14 @@ void pollIO()
 				strings |= b;
 				
 				// does it map to a real note?
-				if(playNotes[i] != NO_NOTE)
+				if(playNotes[whichString] != NO_NOTE)
 				{
 					// play or damp the note as needed
 					if(options & OPT_PLAYONMAKE)
-						startNote(playChannel, playNotes[i],  playVelocity);						
+						startNote(playChannel, playNotes[whichString],  playVelocity);						
 					else
 					if(options & OPT_STOPONMAKE)
-						stopNote(playChannel, playNotes[i]);						
+						stopNote(playChannel, playNotes[whichString]);						
 				}
 			}
 		}
@@ -932,14 +957,14 @@ void pollIO()
 			strings &= ~b;
 			
 			// does it map to a real note?
-			if(playNotes[i] != NO_NOTE)
+			if(playNotes[whichString] != NO_NOTE)
 			{
 				// play or damp the note as needed
 				if(options & OPT_PLAYONBREAK)
-					startNote(playChannel, playNotes[i],  playVelocity);						
+					startNote(playChannel, playNotes[whichString],  playVelocity);						
 				else
 				if(options & OPT_STOPONBREAK)
-					stopNote(playChannel, playNotes[i]);						
+					stopNote(playChannel, playNotes[whichString]);						
 			}
 		}	
 		
@@ -964,9 +989,11 @@ void pollIO()
 				case 5: presetPatch(patch_OrganButtons); break;
 				case 7: presetPatch(patch_OrganButtonsAddedNotes); break;
 				case 9: presetPatch(patch_OrganButtonsAddedNotesRetrig); break;
+				case 10: toggleStrumDirection(); break;
 				case 11: loadUserOptions(); break;
 				}
 				break;
+				
 			case CHORD_MIN: // ROW 2
 				switch(chordSelection.rootNote)
 				{
@@ -980,9 +1007,7 @@ void pollIO()
 				case 10: toggleOption(OPT_SUSTAINDRONE); break;
 				case 11: saveUserOptions(); break;
 				}
-				break;
-	
-	
+				break;	
 				
 			case CHORD_DOM7: // ROW3
 				switch(chordSelection.rootNote)
@@ -1019,6 +1044,11 @@ void pollIO()
 	lastRootNoteSelection = chordSelection.rootNote;
 }
 
+////////////////////////////////////////////////////////////
+//
+// BLINK FIRMWARE VERSION
+//
+////////////////////////////////////////////////////////////
 void showVersion()
 {
 	int i;
@@ -1086,7 +1116,9 @@ void main()
 	// initialise the notes array
 	memset(playNotes,NO_NOTE,sizeof(playNotes));
 	memset(droneNotes,NO_NOTE,sizeof(droneNotes));
-	
+
+	// load the reverse strum setting
+	reverseStrum = (eeprom_read(EEPROM_ADDR_REV_STRUM) == 1);
 	
 	for(;;)
 	{
