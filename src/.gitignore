@@ -62,3 +62,10 @@ Desktop.ini
 *.tree
 makefile.*
 StrumController.hex
+
+
+
+*.odt#
+*.dru
+picasa.ini
+pspbrwse.jbf

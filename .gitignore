@@ -15,3 +15,11 @@
 *.exe
 *.out
 *.app
+
+
+
+
+*.odt#
+*.dru
+picasa.ini
+pspbrwse.jbf
