@@ -5,13 +5,24 @@
 //    //    // //       ///   ///   //// //  //  //////
 //    //    /////         //  //   //    //  // // // //
 //    //    //        //  //  //   //    //  // // // //
-//    /////  ///      /////    /// //     ///// //    //
-//    STRUMMED CHORD CONTROLLER
+//    /////  ///       ////    /// //     ///// //    //
+//    STRUMMED CHORD MIDI CONTROLLER
 //
-//    (c) 2013 J.Hotchkiss
 //    SOURCEBOOST C FOR PIC16F1825
 //
-// Ver  Date 
+// This work is licensed under the Creative Commons 
+// Attribution-NonCommercial 3.0 Unported License. 
+// To view a copy of this license, please visit:
+// http://creativecommons.org/licenses/by-nc/3.0/
+//
+// Please contact me directly if you'd like a CC 
+// license allowing use for commercial purposes:
+// jason_hotchkiss<at>hotmail.com
+//
+// Full repository with hardware information:
+// https://github.com/hotchk155/Voici-Le-Strum
+//
+// Ver Date 
 // 1.0 16Jun2013 Initial baseline release for new PCB
 // 1.1 23Jun2013 First release
 // 1.2 02Jul2013 Reverse Strum Mode Added
