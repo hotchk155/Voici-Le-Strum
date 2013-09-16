@@ -4,6 +4,8 @@ Active Config=Release
 Active Directory=C:\Dev\GitHub\Voici-Le-Strum\src\
 Target=PIC16F1825
 Config=0
+Last ExtIdx=1
+Last Dir=C:\Dev\GitHub\Voici-Le-Strum\src\
 [Files]
 Count=1
 File0=StrumController.c

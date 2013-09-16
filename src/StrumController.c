@@ -26,9 +26,10 @@
 // 1.0 16Jun2013 Initial baseline release for new PCB
 // 1.1 23Jun2013 First release
 // 1.2 02Jul2013 Reverse Strum Mode Added
+// 1.3 16Sep2013 Allow settling time in pollIO
 //
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 2
+#define VERSION_MINOR 3
 //
 ////////////////////////////////////////////////////////////
 
@@ -900,6 +901,9 @@ void pollIO()
 		// second clock pulse, since we tied shift and store clock lines together)
 		P_CLK = 0;				
 		P_CLK = 1;
+
+		// Allow inputs to settle
+		delay_ms(1);
 		
 		// did we get a signal back on any of the  keyboard scan rows?
 		if(P_KEYS1 || P_KEYS2 || P_KEYS3)
