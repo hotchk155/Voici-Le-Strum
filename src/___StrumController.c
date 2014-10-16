@@ -26,10 +26,10 @@
 // 1.0 16Jun2013 Initial baseline release for new PCB
 // 1.1 23Jun2013 First release
 // 1.2 02Jul2013 Reverse Strum Mode Added
-// 1.3 16Sep2013 Allow settling time in pollIO
-// 4   16Oct2014 Circle of 5ths mode	
-#define VERSION_NUMBER 4
-
+// 1.3 16Sep2013 
+//
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 3
 //
 ////////////////////////////////////////////////////////////
 
@@ -37,6 +37,7 @@
 #include <system.h>
 #include <memory.h>
 #include <eeprom.h>
+#include <boostc.h>
 
 // PIC CONFIG
 #pragma DATA _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF &_CLKOUTEN_OFF
@@ -58,11 +59,18 @@
 #define EEPROM_ADDR_MAGIC_COOKIE 0
 #define EEPROM_ADDR_OPTIONS_HIGH 1
 #define EEPROM_ADDR_OPTIONS_LOW 2
-#define EEPROM_ADDR_SETTINGS_HIGH 3
-#define EEPROM_ADDR_SETTINGS_LOW 4
+#define EEPROM_ADDR_REV_STRUM 3
+#define EEPROM_ADDR_PLAY_CHANNEL 4
+#define EEPROM_ADDR_DRONE_CHANNEL 5
+#define EEPROM_ADDR_SETTLE_TIME 6
 
 // special token used to indicate initialised eeprom
-#define EEPROM_MAGIC_COOKIE 102
+#define EEPROM_MAGIC_COOKIE2 124
+
+// EEPROM setting defaults
+#define DEFAULT_PLAY_CHANNEL 	0
+#define DEFAULT_DRONE_CHANNEL	1
+#define DEFAULT_SETTLE_TIME		7	
 
 // CHORD SHAPES
 enum {
@@ -120,11 +128,6 @@ enum {
 	OPT_PENTATONIC			= 0x8000  // map strings to pentatonic scale 
 };
 
-enum {
-	SETTING_REVERSESTRUM	= 0x0001, // reverse strum direction
-	SETTING_CIRCLEOF5THS	= 0x0002  // accordion button layout
-};
-
 // Byte type
 typedef unsigned char byte;
 
@@ -142,27 +145,25 @@ typedef struct
 // bit mapped register of which strings are currently connected to the stylus 
 unsigned long strings =0;
 
-#define NO_SELECTION 0xff
-
-// The first column containing a pressed chord button 
-byte rootNoteColumn = NO_SELECTION;
-
 // The first column containing a pressed chord button during the last key scan
-byte lastRootNoteColumn = NO_SELECTION;
+byte lastRootNoteSelection = NO_NOTE;
 
 // Define the information relating to string play
-byte playChannel = 0;
+byte playChannel = DEFAULT_PLAY_CHANNEL;
 byte playVelocity = 127;
 byte playNotes[16];
 
 // Define the information relating to chord button drone
-byte droneChannel = 1;
+byte droneChannel = DEFAULT_DRONE_CHANNEL;
 byte droneVelocity = 127;
 byte droneNotes[16];
 
 // This structure records the previous chord selection so we can
 // detected if it has changed
 CHORD_SELECTION lastChordSelection = { CHORD_NONE, NO_NOTE, ADD_NONE };
+
+// The settle time
+byte settleTime = DEFAULT_SETTLE_TIME;
 
 ////////////////////////////////////////////////////////////
 //
@@ -238,10 +239,9 @@ const unsigned int patch_OrganButtonsChromatic =
 	OPT_SUSTAINDRONE		|
 	OPT_SUSTAINDRONECOMMON	;
 
-const unsigned int DefaultSettings = 0;
 
 unsigned int options = patch_BasicStrum;
-unsigned int settings = DefaultSettings;
+byte reverseStrum = 0;
 
 ////////////////////////////////////////////////////////////
 //
@@ -282,44 +282,28 @@ void clearOptions(unsigned long o)
 
 ////////////////////////////////////////////////////////////
 //
-// load the EEEPROM info
+// LOAD USER OPTIONS FROM EEPROM
 //
 ////////////////////////////////////////////////////////////
-void loadSettingsFromEEPROM()
+void loadUserOptions()
 {
-	if(eeprom_read(EEPROM_ADDR_MAGIC_COOKIE) != EEPROM_MAGIC_COOKIE)
+	// magic cookie tells us the user patch is initialised
+	if(eeprom_read(EEPROM_ADDR_MAGIC_COOKIE) != EEPROM_MAGIC_COOKIE2)
 	{
 		options = patch_BasicStrum;
-		settings = DefaultSettings;
-		eeprom_write(EEPROM_ADDR_OPTIONS_HIGH, (options >> 8) & 0xff);
-		eeprom_write(EEPROM_ADDR_OPTIONS_LOW, options & 0xff);
-		eeprom_write(EEPROM_ADDR_SETTINGS_HIGH, (settings >> 8) & 0xff);
-		eeprom_write(EEPROM_ADDR_SETTINGS_LOW, settings & 0xff);
-		eeprom_write(EEPROM_ADDR_MAGIC_COOKIE, EEPROM_MAGIC_COOKIE);
-		P_LED = 1;	delay_s(4);	P_LED = 0; 
-		
+		playChannel = DEFAULT_PLAY_CHANNEL;
+		droneChannel = DEFAULT_DRONE_CHANNEL;
+		settleTime = DEFAULT_SETTLE_TIME;		
 	}
 	else
 	{
 		options = 
-				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_HIGH)<<8 | 		
+				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_HIGH)<<8 | 
 				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_LOW);
-		settings = 
-				(unsigned int)eeprom_read(EEPROM_ADDR_SETTINGS_HIGH)<<8 | 		
-				(unsigned int)eeprom_read(EEPROM_ADDR_SETTINGS_LOW);
+		playChannel = eeprom_read(EEPROM_ADDR_PLAY_CHANNEL);
+		droneChannel = eeprom_read(EEPROM_ADDR_DRONE_CHANNEL);
+		settleTime = eeprom_read(EEPROM_ADDR_SETTLE_TIME);
 	}
-}
-
-////////////////////////////////////////////////////////////
-//
-// LOAD USER OPTIONS FROM EEPROM
-//
-////////////////////////////////////////////////////////////
-void loadUserPatch()
-{
-	options = 
-			(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_HIGH)<<8 | 		
-			(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_LOW);
 	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
 	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
 	P_LED = 1; delay_ms(10); P_LED = 0; delay_ms(100);
@@ -330,24 +314,54 @@ void loadUserPatch()
 // SAVE USER OPTIONS TO EEPROM
 //
 ////////////////////////////////////////////////////////////
-void saveUserPatch()
+void saveUserOptions()
 {
+	eeprom_write(EEPROM_ADDR_MAGIC_COOKIE, EEPROM_MAGIC_COOKIE2);
 	eeprom_write(EEPROM_ADDR_OPTIONS_HIGH, (options >> 8) & 0xff);
 	eeprom_write(EEPROM_ADDR_OPTIONS_LOW, options & 0xff);
+	eeprom_write(EEPROM_ADDR_PLAY_CHANNEL, playChannel);
+	eeprom_write(EEPROM_ADDR_DRONE_CHANNEL, droneChannel);
+	eeprom_write(EEPROM_ADDR_SETTLE_TIME, settleTime);
 	P_LED = 1;	delay_s(2);	P_LED = 0;
 }
 
 ////////////////////////////////////////////////////////////
 //
-// TOGGLE SETTINGS AND SAVE
+// TOGGLE STRUM DIRECTION SETTING
 //
 ////////////////////////////////////////////////////////////
-void toggleSetting(unsigned int o)
+byte toggleStrumDirection()
 {
-	settings ^= o;
-	eeprom_write(EEPROM_ADDR_SETTINGS_HIGH, (settings >> 8) & 0xff);
-	eeprom_write(EEPROM_ADDR_SETTINGS_LOW, settings & 0xff);
-	P_LED = 1;	delay_s(2);	P_LED = 0;
+	reverseStrum = !reverseStrum;
+	eeprom_write(EEPROM_ADDR_REV_STRUM, reverseStrum);
+	P_LED = 1; delay_s(2);	P_LED = 0;
+}
+
+////////////////////////////////////////////////////////////
+//
+// IMPLEMENT SETTLE TIME DELAY
+//
+////////////////////////////////////////////////////////////
+void settle()
+{
+	switch(settleTime)
+	{
+		case 1: delay_us(5); break;
+		case 2: delay_us(10); break;
+		case 3: delay_us(15); break;
+		case 4: delay_us(25); break;
+		case 5: delay_us(50); break;
+		case 6: delay_us(75); break;
+		case 7: delay_us(100); break;
+		case 8: delay_us(250); break;
+		case 9: delay_us(250); delay_us(250); break;
+		case 10: delay_us(250); delay_us(250); delay_us(250); break;
+		case 11: delay_ms(1); break;
+		case 12: delay_ms(2); break;
+		case 13: delay_ms(3); break;
+		case 14: delay_ms(4); break;
+		case 15: delay_ms(5); break;
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -910,33 +924,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 	
 }
 
-////////////////////////////////////////////////////////////
-//
-// POLL INPUT AND MANAGE THE SENDING OF MIDI INFO
-//
-////////////////////////////////////////////////////////////
-byte mapRootNote(byte col)
-{
-	if(!(settings & SETTING_CIRCLEOF5THS))
-		return col;
-	switch(col)
-	{
-		case 0: return ROOT_CSHARP;
-		case 1: return ROOT_GSHARP;
-		case 2: return ROOT_DSHARP;
-		case 3: return ROOT_ASHARP;
-		case 4: return ROOT_F;
-		case 5: return ROOT_C;
-		case 6: return ROOT_G;
-		case 7: return ROOT_D;
-		case 8: return ROOT_A;		
-		case 9: return ROOT_E;
-		case 10: return ROOT_B;
-		case 11: return ROOT_FSHARP;
-	}
-	return NO_NOTE;
-}
-
+	
 ////////////////////////////////////////////////////////////
 //
 // POLL INPUT AND MANAGE THE SENDING OF MIDI INFO
@@ -951,7 +939,6 @@ void pollIO()
 	P_DS = 0;	
 
 	
-	rootNoteColumn = NO_SELECTION;
 	CHORD_SELECTION chordSelection = { CHORD_NONE,  NO_NOTE, ADD_NONE };
 	unsigned long b = 1;
 	byte stringCount = 0;
@@ -959,28 +946,26 @@ void pollIO()
 	// scan for each string
 	for(int i=0;i<16;++i)
 	{			
-		int whichString = (!!(settings & SETTING_REVERSESTRUM))? (15-i) : i;
+		int whichString = reverseStrum? (15-i) : i;
 		
 		// clock pulse to shift the bit (the first bit does not appear until the
 		// second clock pulse, since we tied shift and store clock lines together)
 		P_CLK = 0;				
 		P_CLK = 1;
-
-		// Allow inputs to settle
-		delay_ms(1);
+		settle();
 		
 		// did we get a signal back on any of the  keyboard scan rows?
 		if(P_KEYS1 || P_KEYS2 || P_KEYS3)
 		{
-			// Is this the first column with a button held 
-			if(rootNoteColumn == NO_SELECTION)
+			// Is this the first column with a button held (which provides
+			// the root note)?
+			if(chordSelection.rootNote == NO_NOTE)
 			{
 				// This logic allows more buttons to be registered without clearing
 				// old buttons if the root note is unchanged. This is to ensure that
 				// new chord shapes are not applied as the user releases the buttons
-				rootNoteColumn = i;					
-				chordSelection.rootNote = mapRootNote(i);
-				if(i == lastRootNoteColumn)
+				chordSelection.rootNote = i;					
+				if(i == lastRootNoteSelection)
 					chordSelection.chordType = lastChordSelection.chordType;
 				chordSelection.chordType |= (P_KEYS1? CHORD_MAJ:CHORD_NONE)|(P_KEYS2? CHORD_MIN:CHORD_NONE)|(P_KEYS3? CHORD_DOM7:CHORD_NONE);					
 			}	
@@ -1055,12 +1040,12 @@ void pollIO()
 	if(!P_MODE)
 	{		
 		// MODE is pressed, has a chord button been newly pressed?
-		if(rootNoteColumn != lastRootNoteColumn)
+		if(lastRootNoteSelection != chordSelection.rootNote)
 		{
 			switch(chordSelection.chordType)
 			{
 			case CHORD_MAJ: // ROW 1
-				switch(rootNoteColumn)
+				switch(chordSelection.rootNote)
 				{
 				case 0: presetPatch(patch_BasicStrum); break;
 				case 2: presetPatch(patch_GuitarStrum); break;
@@ -1068,12 +1053,13 @@ void pollIO()
 				case 5: presetPatch(patch_OrganButtons); break;
 				case 7: presetPatch(patch_OrganButtonsAddedNotes); break;
 				case 9: presetPatch(patch_OrganButtonsAddedNotesRetrig); break;
-				case 11: loadUserPatch(); break;
+				case 10: toggleStrumDirection(); break;
+				case 11: loadUserOptions(); break;
 				}
 				break;
 				
 			case CHORD_MIN: // ROW 2
-				switch(rootNoteColumn)
+				switch(chordSelection.rootNote)
 				{
 				case 0: toggleOption(OPT_PLAYONMAKE); break;
 				case 1: toggleOption(OPT_PLAYONBREAK); break;
@@ -1081,15 +1067,14 @@ void pollIO()
 				case 3: toggleOption(OPT_ADDNOTES); break;
 				case 4: toggleOption(OPT_SUSTAIN); break;
 				case 5: toggleOption(OPT_CHROMATIC); clearOptions(OPT_DIATONIC|OPT_PENTATONIC); break;
-				case 7: toggleOption(OPT_DRONE); break;
-				case 8: toggleOption(OPT_SUSTAINDRONE); break;
-				case 10: toggleSetting(SETTING_REVERSESTRUM); break;
-				case 11: saveUserPatch(); break;
+				case 9: toggleOption(OPT_DRONE); break;
+				case 10: toggleOption(OPT_SUSTAINDRONE); break;
+				case 11: saveUserOptions(); break;
 				}
 				break;	
 				
 			case CHORD_DOM7: // ROW3
-				switch(rootNoteColumn)
+				switch(chordSelection.rootNote)
 				{
 				case 0: toggleOption(OPT_STOPONMAKE); break;
 				case 1: toggleOption(OPT_STOPONBREAK); break;
@@ -1098,8 +1083,7 @@ void pollIO()
 				case 4: toggleOption(OPT_SUSTAINCOMMON); break;
 				case 5: toggleOption(OPT_DIATONIC); clearOptions(OPT_CHROMATIC|OPT_PENTATONIC); break;
 				case 6: toggleOption(OPT_PENTATONIC); clearOptions(OPT_DIATONIC|OPT_CHROMATIC); break;
-				case 8: toggleOption(OPT_SUSTAINDRONECOMMON); break;
-				case 10: toggleSetting(SETTING_CIRCLEOF5THS); break;
+				case 10: toggleOption(OPT_SUSTAINDRONECOMMON); break;
 				case 11:
 					// MIDI Panic
 					stopAllNotes(playChannel);
@@ -1121,7 +1105,7 @@ void pollIO()
 	}
 	
 	// remember the root note for this keyboard scan
-	lastRootNoteColumn = rootNoteColumn;
+	lastRootNoteSelection = chordSelection.rootNote;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1132,13 +1116,99 @@ void pollIO()
 void showVersion()
 {
 	int i;
-	for(i=0;i<VERSION_NUMBER;++i)
+	for(i=0;i<VERSION_MAJOR;++i)
 	{
 		P_LED = 1;
-		delay_ms(200);
-		delay_ms(200);
+		delay_s(1);
 		P_LED = 0;
-		delay_ms(200);
+		delay_ms(250);
+	}
+	P_LED = 1; 
+	delay_ms(10);	
+	P_LED = 0;
+	delay_ms(250);
+	for(i=0;i<VERSION_MINOR;++i)
+	{
+		P_LED = 1;
+		delay_s(1);
+		P_LED = 0;
+		delay_ms(250);
+	}
+	P_LED = 1; 
+	delay_ms(10);	
+	P_LED = 0;
+}
+
+////////////////////////////////////////////////////////////
+//
+// ALLOW SYSTEM OPTIONS TO BE CHANGED
+//
+////////////////////////////////////////////////////////////
+void systemOptionsEdit()
+{
+	init_usart();
+	loadUserOptions();
+	byte c=0;
+	for(;;)
+	{
+		P_LED = !(c++&0x40);
+	
+		// clock a single bit into the shift register
+		P_CLK = 0;
+		P_DS = 1;	
+		P_CLK = 1;
+		P_DS = 0;	
+		
+		// scan for each string
+		int iParameter = -1;
+		int iValue = -1;
+		for(int i=0;i<16;++i)
+		{			
+			// clock pulse to shift the bit (the first bit does not appear until the
+			// second clock pulse, since we tied shift and store clock lines together)
+			P_CLK = 0;				
+			P_CLK = 1;
+			settle();
+			
+			// did we get a signal back on any of the  keyboard scan rows?
+			if(P_KEYS1 && iParameter < 0)
+			{
+				iParameter = i;
+			}
+			else if(P_KEYS3 && 11==i)
+			{
+				saveUserOptions();
+				P_LED = 0;
+				reset();
+			}
+	
+			if(P_STYLUS && iValue < 0)
+			{
+				iValue = i;
+			}
+		}	
+		
+		if(iParameter>=0 && iValue>=0)
+		{
+			switch(iParameter)
+			{
+			case 0:
+				playChannel = iValue;
+				startNote(playChannel, 60, 127);
+				delay_ms(100);
+				stopNote(playChannel, 60);
+				break;
+			case 1:
+				droneChannel = iValue;
+				startNote(droneChannel, 60, 127);
+				delay_ms(100);
+				stopNote(droneChannel, 60);
+				break;
+			case 11:
+				settleTime = iValue;
+				break;
+			}
+		}
 	}
 }
 
@@ -1166,9 +1236,13 @@ void main()
 	ansela = 0b00000000;
 	anselc = 0b00000000;
 
-	if(!P_MODE)
+	if(!P_MODE) // mode pressed at startup
 	{
 		showVersion();
+		if(!P_MODE)	
+		{		
+			systemOptionsEdit();			
+		}
 	}
 	else
 	{
@@ -1184,8 +1258,9 @@ void main()
 	memset(playNotes,NO_NOTE,sizeof(playNotes));
 	memset(droneNotes,NO_NOTE,sizeof(droneNotes));
 
-	// load the user patch and device settings
-	loadSettingsFromEEPROM();	
+	// load the reverse strum setting
+	reverseStrum = (eeprom_read(EEPROM_ADDR_REV_STRUM) == 1);
+	
 	for(;;)
 	{
 		// and now just repeatedly
