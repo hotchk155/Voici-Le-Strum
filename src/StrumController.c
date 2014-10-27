@@ -23,13 +23,12 @@
 // https://github.com/hotchk155/Voici-Le-Strum
 //
 // Ver Date 
-// 1.0 16Jun2013 Initial baseline release for new PCB
-// 1.1 23Jun2013 First release
-// 1.2 02Jul2013 Reverse Strum Mode Added
-// 1.3 16Sep2013 Allow settling time in pollIO
+// 0   16Jun2013 Initial baseline release for new PCB
+// 1   23Jun2013 First release
+// 2   02Jul2013 Reverse Strum Mode Added
+// 3   16Sep2013 Allow settling time in pollIO
 // 4   16Oct2014 Circle of 5ths mode	
 #define VERSION_NUMBER 4
-
 //
 ////////////////////////////////////////////////////////////
 
@@ -55,14 +54,14 @@
 //portc.4 = TX
 
 // special EEPROM addresses
-#define EEPROM_ADDR_MAGIC_COOKIE 0
-#define EEPROM_ADDR_OPTIONS_HIGH 1
-#define EEPROM_ADDR_OPTIONS_LOW 2
-#define EEPROM_ADDR_SETTINGS_HIGH 3
-#define EEPROM_ADDR_SETTINGS_LOW 4
+#define EEPROM_ADDR_MAGIC_COOKIE 	0
+#define EEPROM_ADDR_OPTIONS_HIGH 	1
+#define EEPROM_ADDR_OPTIONS_LOW 	2
+#define EEPROM_ADDR_SETTINGS_HIGH 	3
+#define EEPROM_ADDR_SETTINGS_LOW 	4
 
 // special token used to indicate initialised eeprom
-#define EEPROM_MAGIC_COOKIE 102
+#define EEPROM_MAGIC_COOKIE 		154
 
 // CHORD SHAPES
 enum {
@@ -1193,6 +1192,3 @@ void main()
 		pollIO();
 	}
 }
-
-
-
