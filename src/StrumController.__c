@@ -1,7 +1,7 @@
 [Settings]
 Active Compiler=BoostC
 Active Config=Release
-Active Directory=C:\Dev\GitHub\Voici-Le-Strum\src\
+Active Directory=D:\GitHub\Voici-Le-Strum\src\
 Target=PIC16F1825
 Config=0
 Last ExtIdx=1

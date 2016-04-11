@@ -28,7 +28,8 @@
 // 2   02Jul2013 Reverse Strum Mode Added
 // 3   16Sep2013 Allow settling time in pollIO
 // 4   16Oct2014 Circle of 5ths mode	
-#define VERSION_NUMBER 4
+// 5   11Apr2016 Selectable channels, chords octave
+#define VERSION_NUMBER 5
 //
 ////////////////////////////////////////////////////////////
 
@@ -59,6 +60,9 @@
 #define EEPROM_ADDR_OPTIONS_LOW 	2
 #define EEPROM_ADDR_SETTINGS_HIGH 	3
 #define EEPROM_ADDR_SETTINGS_LOW 	4
+#define EEPROM_ADDR_PLAY_CHANNEL 	5
+#define EEPROM_ADDR_DRONE_CHANNEL 	6
+#define EEPROM_ADDR_DRONE_OCTAVE 	7
 
 // special token used to indicate initialised eeprom
 #define EEPROM_MAGIC_COOKIE 		154
@@ -124,6 +128,19 @@ enum {
 	SETTING_CIRCLEOF5THS	= 0x0002  // accordion button layout
 };
 
+enum {
+	SHIFTMODE_NONE = 0,
+	SHIFTMODE_PLAYCHANNEL = 1,
+	SHIFTMODE_DRONECHANNEL = 2,
+	SHIFTMODE_DRONEOCTAVE = 3
+};
+
+//defaults
+#define DEFAULT_PLAY_CHANNEL 0
+#define DEFAULT_DRONE_CHANNEL 1
+#define DEFAULT_DRONE_OCTAVE 3
+
+
 // Byte type
 typedef unsigned char byte;
 
@@ -137,11 +154,10 @@ typedef struct
 
 // special note value
 #define NO_NOTE 0xff
+#define NO_SELECTION 0xff
 
 // bit mapped register of which strings are currently connected to the stylus 
 unsigned long strings =0;
-
-#define NO_SELECTION 0xff
 
 // The first column containing a pressed chord button 
 byte rootNoteColumn = NO_SELECTION;
@@ -150,14 +166,16 @@ byte rootNoteColumn = NO_SELECTION;
 byte lastRootNoteColumn = NO_SELECTION;
 
 // Define the information relating to string play
-byte playChannel = 0;
 byte playVelocity = 127;
 byte playNotes[16];
 
 // Define the information relating to chord button drone
-byte droneChannel = 1;
 byte droneVelocity = 127;
 byte droneNotes[16];
+
+// Shift mode
+byte shiftMode = SHIFTMODE_NONE;
+byte ledToggle = 0;
 
 // This structure records the previous chord selection so we can
 // detected if it has changed
@@ -241,6 +259,9 @@ const unsigned int DefaultSettings = 0;
 
 unsigned int options = patch_BasicStrum;
 unsigned int settings = DefaultSettings;
+byte playChannel = DEFAULT_PLAY_CHANNEL;
+byte droneChannel = DEFAULT_DRONE_CHANNEL;
+byte droneOctave = DEFAULT_DRONE_OCTAVE;
 
 ////////////////////////////////////////////////////////////
 //
@@ -294,9 +315,11 @@ void loadSettingsFromEEPROM()
 		eeprom_write(EEPROM_ADDR_OPTIONS_LOW, options & 0xff);
 		eeprom_write(EEPROM_ADDR_SETTINGS_HIGH, (settings >> 8) & 0xff);
 		eeprom_write(EEPROM_ADDR_SETTINGS_LOW, settings & 0xff);
+		eeprom_write(EEPROM_ADDR_PLAY_CHANNEL, DEFAULT_PLAY_CHANNEL);
+		eeprom_write(EEPROM_ADDR_DRONE_CHANNEL, DEFAULT_DRONE_CHANNEL);
+		eeprom_write(EEPROM_ADDR_DRONE_OCTAVE, DEFAULT_DRONE_OCTAVE);		
 		eeprom_write(EEPROM_ADDR_MAGIC_COOKIE, EEPROM_MAGIC_COOKIE);
-		P_LED = 1;	delay_s(4);	P_LED = 0; 
-		
+		P_LED = 1;	delay_s(4);	P_LED = 0; 		
 	}
 	else
 	{
@@ -304,8 +327,11 @@ void loadSettingsFromEEPROM()
 				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_HIGH)<<8 | 		
 				(unsigned int)eeprom_read(EEPROM_ADDR_OPTIONS_LOW);
 		settings = 
-				(unsigned int)eeprom_read(EEPROM_ADDR_SETTINGS_HIGH)<<8 | 		
+				(unsigned int)eeprom_read(EEPROM_ADDR_SETTINGS_HIGH)<<8 | 						
 				(unsigned int)eeprom_read(EEPROM_ADDR_SETTINGS_LOW);
+		playChannel = eeprom_read(EEPROM_ADDR_PLAY_CHANNEL);
+		droneChannel = eeprom_read(EEPROM_ADDR_DRONE_CHANNEL);
+		droneOctave = eeprom_read(EEPROM_ADDR_DRONE_OCTAVE);
 	}
 }
 
@@ -347,6 +373,47 @@ void toggleSetting(unsigned int o)
 	eeprom_write(EEPROM_ADDR_SETTINGS_HIGH, (settings >> 8) & 0xff);
 	eeprom_write(EEPROM_ADDR_SETTINGS_LOW, settings & 0xff);
 	P_LED = 1;	delay_s(2);	P_LED = 0;
+}
+
+////////////////////////////////////////////////////////////
+//
+// SET PLAY CHANNEL
+//
+////////////////////////////////////////////////////////////
+void setPlayChannel(byte c)
+{
+	playChannel = c&0xF;
+	eeprom_write(EEPROM_ADDR_PLAY_CHANNEL, playChannel);
+	P_LED = 1;	delay_s(2);	P_LED = 0;
+}
+
+////////////////////////////////////////////////////////////
+//
+// SET DRONE CHANNEL
+//
+////////////////////////////////////////////////////////////
+void setDroneChannel(byte c)
+{
+	droneChannel = c&0xF;
+	eeprom_write(EEPROM_ADDR_DRONE_CHANNEL, droneChannel);
+	P_LED = 1;	delay_s(2);	P_LED = 0;
+}
+
+////////////////////////////////////////////////////////////
+//
+// INC DRONE OCTAVE
+//
+////////////////////////////////////////////////////////////
+void setDroneOctave(byte c)
+{
+	if(c>8) {
+		c=8;
+	}
+	if(c!=droneOctave) {
+		droneOctave	= c;
+		eeprom_write(EEPROM_ADDR_DRONE_OCTAVE, droneOctave);
+		P_LED = 1;	delay_s(1);	P_LED = 0;
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -899,7 +966,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		if(options & OPT_DRONE)
 		{
 			// for the drone chord we only play the triad (not stacked)
-			stackTriads(pChordSelection, 1, 36, 16, notes);
+			stackTriads(pChordSelection, 1, (droneOctave * 12), 16, notes);
 			playChordNotes(droneNotes, notes, droneChannel, droneVelocity, !!(options & OPT_SUSTAINDRONECOMMON));
 		}
 	}
@@ -999,55 +1066,83 @@ void pollIO()
 		// if MODE is pressed the stylus is used to change the MIDI velocity
 		if(!P_MODE)
 		{
-			if(P_STYLUS)
-				playVelocity = 0x0f | (whichString<<4);
+			if(P_STYLUS) {
+				switch(shiftMode) {
+					case SHIFTMODE_PLAYCHANNEL:
+						setPlayChannel(whichString);
+						shiftMode = SHIFTMODE_NONE;
+						P_LED = 0;
+						break;
+					case SHIFTMODE_DRONECHANNEL:
+						setDroneChannel(whichString);
+						shiftMode = SHIFTMODE_NONE;
+						P_LED = 0;
+						break;
+					case SHIFTMODE_DRONEOCTAVE:
+						setDroneOctave(whichString);
+						shiftMode = SHIFTMODE_NONE;
+						P_LED = 0;
+						break;
+					default:
+						playVelocity = 0x0f | (whichString<<4);
+						break;
+				}
+			}
+			if(shiftMode!=SHIFTMODE_NONE) {
+				P_LED = !!(++ledToggle&0x10);
+			}
 		}
 		// otherwise check whether we got a signal back from the stylus (meaning that
 		// it's touching this string)
-		else if(P_STYLUS)
+		else 
 		{
-			++stringCount;
-			
-			// string is being touched... was
-			// it being touched before?
-			if(!(strings & b))
+			shiftMode = SHIFTMODE_NONE;
+			P_LED = 0;
+			if(P_STYLUS)
 			{
-				// remember this string is being touched
-				strings |= b;
+				++stringCount;
+				
+				// string is being touched... was
+				// it being touched before?
+				if(!(strings & b))
+				{
+					// remember this string is being touched
+					strings |= b;
+					
+					// does it map to a real note?
+					if(playNotes[whichString] != NO_NOTE)
+					{
+						// play or damp the note as needed
+						if(options & OPT_PLAYONMAKE)
+							startNote(playChannel, playNotes[whichString],  playVelocity);						
+						else
+						if(options & OPT_STOPONMAKE)
+							stopNote(playChannel, playNotes[whichString]);						
+					}
+				}
+			}
+			// stylus not touching string now, but was it 
+			// touching the string before?
+			else if(strings & b)
+			{
+				// remember string is not being touched
+				strings &= ~b;
 				
 				// does it map to a real note?
 				if(playNotes[whichString] != NO_NOTE)
 				{
 					// play or damp the note as needed
-					if(options & OPT_PLAYONMAKE)
+					if(options & OPT_PLAYONBREAK)
 						startNote(playChannel, playNotes[whichString],  playVelocity);						
 					else
-					if(options & OPT_STOPONMAKE)
+					if(options & OPT_STOPONBREAK)
 						stopNote(playChannel, playNotes[whichString]);						
 				}
-			}
-		}
-		// stylus not touching string now, but was it 
-		// touching the string before?
-		else if(strings & b)
-		{
-			// remember string is not being touched
-			strings &= ~b;
+			}	
 			
-			// does it map to a real note?
-			if(playNotes[whichString] != NO_NOTE)
-			{
-				// play or damp the note as needed
-				if(options & OPT_PLAYONBREAK)
-					startNote(playChannel, playNotes[whichString],  playVelocity);						
-				else
-				if(options & OPT_STOPONBREAK)
-					stopNote(playChannel, playNotes[whichString]);						
-			}
-		}	
-		
-		// shift the masking bit	
-		b<<=1;		
+			// shift the masking bit	
+			b<<=1;		
+		}
 	}	
 		
 
@@ -1055,7 +1150,7 @@ void pollIO()
 	{		
 		// MODE is pressed, has a chord button been newly pressed?
 		if(rootNoteColumn != lastRootNoteColumn)
-		{
+		{				
 			switch(chordSelection.chordType)
 			{
 			case CHORD_MAJ: // ROW 1
@@ -1067,6 +1162,7 @@ void pollIO()
 				case 5: presetPatch(patch_OrganButtons); break;
 				case 7: presetPatch(patch_OrganButtonsAddedNotes); break;
 				case 9: presetPatch(patch_OrganButtonsAddedNotesRetrig); break;
+				case 10: shiftMode = SHIFTMODE_DRONEOCTAVE; break;				
 				case 11: loadUserPatch(); break;
 				}
 				break;
@@ -1082,6 +1178,7 @@ void pollIO()
 				case 5: toggleOption(OPT_CHROMATIC); clearOptions(OPT_DIATONIC|OPT_PENTATONIC); break;
 				case 7: toggleOption(OPT_DRONE); break;
 				case 8: toggleOption(OPT_SUSTAINDRONE); break;
+				case 9: shiftMode = SHIFTMODE_PLAYCHANNEL; break;				
 				case 10: toggleSetting(SETTING_REVERSESTRUM); break;
 				case 11: saveUserPatch(); break;
 				}
@@ -1098,6 +1195,7 @@ void pollIO()
 				case 5: toggleOption(OPT_DIATONIC); clearOptions(OPT_CHROMATIC|OPT_PENTATONIC); break;
 				case 6: toggleOption(OPT_PENTATONIC); clearOptions(OPT_DIATONIC|OPT_CHROMATIC); break;
 				case 8: toggleOption(OPT_SUSTAINDRONECOMMON); break;
+				case 9: shiftMode = SHIFTMODE_DRONECHANNEL; break;				
 				case 10: toggleSetting(SETTING_CIRCLEOF5THS); break;
 				case 11:
 					// MIDI Panic
