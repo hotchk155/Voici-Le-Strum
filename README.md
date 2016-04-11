@@ -1,2 +1,3 @@
-LE STRUM is a MIDI strummed chord control surface built around the PIC16F1825 microcontroller. Check out the wiki for more info
-[https://github.com/hotchk155/Voici-Le-Strum/wiki](https://github.com/hotchk155/Voici-Le-Strum/wiki)
+LE STRUM is a MIDI strummed chord control surface built around the PIC16F1825 microcontroller. 
+
+The Le Strum documentation is at [http://six4pix.com/lestrum/](http://six4pix.com/lestrum/)
