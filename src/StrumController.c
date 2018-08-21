@@ -29,7 +29,8 @@
 // 3   16Sep2013 Allow settling time in pollIO
 // 4   16Oct2014 Circle of 5ths mode	
 // 5   11Apr2016 Selectable channels, chords octave
-#define VERSION_NUMBER 5
+// 6   21Aug2018 Ability to set specific chord notes in "organ buttons" mode
+#define VERSION_NUMBER 6
 //
 ////////////////////////////////////////////////////////////
 
@@ -132,7 +133,8 @@ enum {
 	SHIFTMODE_NONE = 0,
 	SHIFTMODE_PLAYCHANNEL = 1,
 	SHIFTMODE_DRONECHANNEL = 2,
-	SHIFTMODE_DRONEOCTAVE = 3
+	SHIFTMODE_DRONEOCTAVE = 3,
+	SHIFTMODE_DRONEKEYS = 4
 };
 
 //defaults
@@ -172,6 +174,7 @@ byte playNotes[16];
 // Define the information relating to chord button drone
 byte droneVelocity = 127;
 byte droneNotes[16];
+unsigned int droneKeys = 0; 
 
 // Shift mode
 byte shiftMode = SHIFTMODE_NONE;
@@ -701,7 +704,7 @@ byte guitarChord(CHORD_SELECTION *pChordSelection, byte transpose, byte *chord)
 // MAKE A CHORD BY "STACKING TRIADS"
 //
 ////////////////////////////////////////////////////////////
-byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose, byte size, byte *chord)
+byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose, byte size, byte *chord, unsigned int keys)
 {
 	byte struc[5];
 	byte len = 0;
@@ -763,9 +766,12 @@ byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose,
 	byte root = pChordSelection->rootNote + transpose;
 	int from = 0;
 	int to = 0;
+	unsigned int keyBit = 1;
 	while(to < size)
 	{
-		chord[to++] = root+struc[from];		
+		if(!keys || (keys & keyBit)) {
+			chord[to++] = root+struc[from];		
+		}
 		if(++from >= len)
 		{
 			if(!--maxReps)
@@ -773,6 +779,7 @@ byte stackTriads(CHORD_SELECTION *pChordSelection, byte maxReps, byte transpose,
 			root+=12;
 			from = 0;
 		}
+		keyBit<<=1;
 	}
 	return to;
 }
@@ -914,7 +921,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 			chordLen = guitarChord(pChordSelection, 12, chord);
 			if(!chordLen)
 			{
-				stackTriads(pChordSelection, -1, 60, 6, chord);
+				stackTriads(pChordSelection, -1, 60, 6, chord, 0);
 				chordLen = 6;
 			}
 				
@@ -951,7 +958,7 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		else	
 		{
 			// stack triads
-			stackTriads(pChordSelection, -1, 36, 16, chord);
+			stackTriads(pChordSelection, -1, 36, 16, chord, 0);
 			chordLen = 16;
 		}
 	
@@ -965,8 +972,13 @@ void changeToChord(CHORD_SELECTION *pChordSelection)
 		// deal with drone
 		if(options & OPT_DRONE)
 		{
-			// for the drone chord we only play the triad (not stacked)
-			stackTriads(pChordSelection, 1, (droneOctave * 12), 16, notes);
+			if(droneKeys) {				
+				stackTriads(pChordSelection, -1, 36, 16, notes, droneKeys);
+			}
+			else {
+				// for the drone chord we only play the triad (not stacked)
+				stackTriads(pChordSelection, 1, (droneOctave * 12), 16, notes, 0);
+			}
 			playChordNotes(droneNotes, notes, droneChannel, droneVelocity, !!(options & OPT_SUSTAINDRONECOMMON));
 		}
 	}
@@ -1083,6 +1095,9 @@ void pollIO()
 						shiftMode = SHIFTMODE_NONE;
 						P_LED = 0;
 						break;
+					case SHIFTMODE_DRONEKEYS:
+						droneKeys |= (((unsigned int)1)<<whichString);						
+						break;
 					default:
 						playVelocity = 0x0f | (whichString<<4);
 						break;
@@ -1194,6 +1209,7 @@ void pollIO()
 				case 4: toggleOption(OPT_SUSTAINCOMMON); break;
 				case 5: toggleOption(OPT_DIATONIC); clearOptions(OPT_CHROMATIC|OPT_PENTATONIC); break;
 				case 6: toggleOption(OPT_PENTATONIC); clearOptions(OPT_DIATONIC|OPT_CHROMATIC); break;
+				case 7: droneKeys = 0; shiftMode = SHIFTMODE_DRONEKEYS; break;				
 				case 8: toggleOption(OPT_SUSTAINDRONECOMMON); break;
 				case 9: shiftMode = SHIFTMODE_DRONECHANNEL; break;				
 				case 10: toggleSetting(SETTING_CIRCLEOF5THS); break;
