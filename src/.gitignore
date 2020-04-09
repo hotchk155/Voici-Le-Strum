@@ -69,3 +69,5 @@ StrumController.hex
 *.dru
 picasa.ini
 pspbrwse.jbf
+
+_old/*.*
