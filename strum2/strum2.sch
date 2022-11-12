@@ -14552,6 +14552,8 @@ Based on the following sources:
 <part name="SW34" library="jason_eagle6" deviceset="12MMTACT_SMT" device=""/>
 <part name="SW35" library="jason_eagle6" deviceset="12MMTACT_SMT" device=""/>
 <part name="SW36" library="jason_eagle6" deviceset="12MMTACT_SMT" device=""/>
+<part name="STYLUS2" library="SparkFun" deviceset="M01" device="PTH"/>
+<part name="STYLUS3" library="SparkFun" deviceset="M01" device="PTH"/>
 </parts>
 <sheets>
 <sheet>
@@ -14657,6 +14659,8 @@ Based on the following sources:
 <instance part="SW34" gate="G$1" x="383.54" y="147.32"/>
 <instance part="SW35" gate="G$1" x="406.4" y="147.32"/>
 <instance part="SW36" gate="G$1" x="429.26" y="147.32"/>
+<instance part="STYLUS2" gate="G$1" x="408.94" y="381" rot="R180"/>
+<instance part="STYLUS3" gate="G$1" x="408.94" y="386.08" rot="R180"/>
 </instances>
 <busses>
 </busses>
@@ -15834,6 +15838,13 @@ Based on the following sources:
 <wire x1="391.16" y1="375.92" x2="401.32" y2="375.92" width="0.1524" layer="91"/>
 <pinref part="STYLUS1" gate="G$1" pin="1"/>
 <wire x1="391.16" y1="370.84" x2="401.32" y2="370.84" width="0.1524" layer="91"/>
+<pinref part="STYLUS3" gate="G$1" pin="1"/>
+<wire x1="401.32" y1="386.08" x2="391.16" y2="386.08" width="0.1524" layer="91"/>
+<wire x1="391.16" y1="386.08" x2="391.16" y2="381" width="0.1524" layer="91"/>
+<pinref part="STYLUS2" gate="G$1" pin="1"/>
+<wire x1="391.16" y1="381" x2="391.16" y2="375.92" width="0.1524" layer="91"/>
+<wire x1="401.32" y1="381" x2="391.16" y2="381" width="0.1524" layer="91"/>
+<junction x="391.16" y="381"/>
 </segment>
 <segment>
 <pinref part="U1" gate="G$1" pin="RC1"/>
