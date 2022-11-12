@@ -14470,7 +14470,7 @@ Based on the following sources:
 <part name="R8" library="resistor" deviceset="R-EU_" device="R0805" value="1k"/>
 <part name="PWR" library="led" deviceset="LED" device="CHIPLED_0805"/>
 <part name="ONOFF" library="SparkFun" deviceset="SWITCH-SPST" device="PTH"/>
-<part name="S37" library="SparkFun" deviceset="TAC_SWITCH" device="PTH"/>
+<part name="MODE" library="SparkFun" deviceset="TAC_SWITCH" device="PTH"/>
 <part name="STYLUS1" library="SparkFun" deviceset="M01" device="PTH"/>
 <part name="C1" library="rcl" deviceset="C-EU" device="C0805"/>
 <part name="C2" library="rcl" deviceset="C-EU" device="C0805"/>
@@ -14575,7 +14575,7 @@ Based on the following sources:
 <instance part="R8" gate="G$1" x="243.84" y="386.08" rot="R270"/>
 <instance part="PWR" gate="G$1" x="243.84" y="363.22"/>
 <instance part="ONOFF" gate="1" x="165.1" y="408.94" rot="R180"/>
-<instance part="S37" gate="S" x="297.18" y="419.1"/>
+<instance part="MODE" gate="S" x="297.18" y="419.1"/>
 <instance part="STYLUS1" gate="G$1" x="408.94" y="370.84" rot="R180"/>
 <instance part="C1" gate="G$1" x="274.32" y="327.66"/>
 <instance part="C2" gate="G$1" x="411.48" y="327.66"/>
@@ -15571,8 +15571,8 @@ Based on the following sources:
 <pinref part="R5" gate="G$1" pin="1"/>
 <pinref part="R6" gate="G$1" pin="1"/>
 <pinref part="R7" gate="G$1" pin="1"/>
-<pinref part="S37" gate="S" pin="1"/>
-<pinref part="S37" gate="S" pin="2"/>
+<pinref part="MODE" gate="S" pin="1"/>
+<pinref part="MODE" gate="S" pin="2"/>
 <pinref part="C1" gate="G$1" pin="1"/>
 <pinref part="C2" gate="G$1" pin="1"/>
 <pinref part="C3" gate="G$1" pin="2"/>
@@ -16050,8 +16050,8 @@ Based on the following sources:
 <junction x="312.42" y="419.1"/>
 <junction x="302.26" y="419.1"/>
 <junction x="302.26" y="416.56"/>
-<pinref part="S37" gate="S" pin="3"/>
-<pinref part="S37" gate="S" pin="4"/>
+<pinref part="MODE" gate="S" pin="3"/>
+<pinref part="MODE" gate="S" pin="4"/>
 <label x="302.26" y="393.7" size="1.778" layer="95"/>
 </segment>
 <segment>

@@ -134,8 +134,6 @@
 </layers>
 <board>
 <plain>
-<text x="57.8104" y="66.294" size="1.27" layer="51" font="vector" ratio="20" rot="R180">+9V</text>
-<text x="58.6486" y="80.518" size="1.27" layer="51" font="vector" ratio="20" rot="R180">GND</text>
 <rectangle x1="176.3395" y1="125.5649" x2="176.4157" y2="125.5903" layer="51"/>
 <rectangle x1="177.2031" y1="125.5649" x2="177.2793" y2="125.5903" layer="51"/>
 <rectangle x1="182.8927" y1="125.5649" x2="182.9689" y2="125.5903" layer="51"/>
@@ -1591,6 +1589,44 @@
 <hole x="0" y="96.52" drill="3.2"/>
 <hole x="162.56" y="96.52" drill="3.2"/>
 <hole x="162.56" y="3.81" drill="3.2"/>
+<wire x1="72.771" y1="98.425" x2="72.771" y2="95.885" width="0.3048" layer="21"/>
+<wire x1="72.771" y1="95.885" x2="81.534" y2="95.885" width="0.3048" layer="21"/>
+<wire x1="81.534" y1="95.885" x2="81.534" y2="98.425" width="0.3048" layer="21"/>
+<wire x1="81.534" y1="98.425" x2="72.771" y2="98.425" width="0.3048" layer="21"/>
+<wire x1="72.771" y1="95.25" x2="72.771" y2="92.71" width="0.3048" layer="21"/>
+<wire x1="72.771" y1="92.71" x2="81.534" y2="92.71" width="0.3048" layer="21"/>
+<wire x1="81.534" y1="92.71" x2="81.534" y2="95.25" width="0.3048" layer="21"/>
+<wire x1="81.534" y1="95.25" x2="72.771" y2="95.25" width="0.3048" layer="21"/>
+<text x="6.604" y="46.99" size="2.54" layer="21" font="vector" ratio="22">C</text>
+<text x="32.004" y="46.99" size="2.54" layer="21" font="vector" ratio="22">D</text>
+<text x="57.404" y="46.99" size="2.54" layer="21" font="vector" ratio="22">E</text>
+<text x="70.104" y="46.99" size="2.54" layer="21" font="vector" ratio="22">F</text>
+<text x="95.504" y="46.99" size="2.54" layer="21" font="vector" ratio="22">G</text>
+<text x="120.904" y="46.99" size="2.54" layer="21" font="vector" ratio="22">A</text>
+<text x="146.304" y="46.99" size="2.54" layer="21" font="vector" ratio="22">B</text>
+<wire x1="0" y1="48.26" x2="5.969" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="8.763" y1="48.26" x2="31.496" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="34.417" y1="48.26" x2="56.896" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="59.436" y1="48.26" x2="69.596" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="72.136" y1="48.26" x2="94.996" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="97.917" y1="48.26" x2="120.396" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="123.317" y1="48.26" x2="145.796" y2="48.26" width="0.3048" layer="21"/>
+<wire x1="148.717" y1="48.26" x2="158.75" y2="48.26" width="0.3048" layer="21"/>
+<text x="154.94" y="40.64" size="5.08" layer="21" font="vector" ratio="22">M</text>
+<text x="157.353" y="25.4" size="5.08" layer="21" font="vector" ratio="22">m</text>
+<text x="160.02" y="10.16" size="5.08" layer="21" font="vector" ratio="22">7</text>
+<text x="62.992" y="70.866" size="1.27" layer="21" font="vector" ratio="20">D2 
+-D17</text>
+<wire x1="83.185" y1="97.917" x2="83.185" y2="94.869" width="0.3048" layer="21"/>
+<wire x1="83.185" y1="94.869" x2="89.535" y2="94.869" width="0.3048" layer="21"/>
+<wire x1="89.535" y1="94.869" x2="89.535" y2="98.171" width="0.3048" layer="21"/>
+<wire x1="89.535" y1="98.171" x2="83.185" y2="98.171" width="0.3048" layer="21"/>
+<wire x1="83.185" y1="98.171" x2="83.185" y2="97.917" width="0.3048" layer="21"/>
+<wire x1="148.209" y1="97.917" x2="148.209" y2="94.869" width="0.3048" layer="21"/>
+<wire x1="148.209" y1="94.869" x2="154.559" y2="94.869" width="0.3048" layer="21"/>
+<wire x1="154.559" y1="94.869" x2="154.559" y2="98.171" width="0.3048" layer="21"/>
+<wire x1="154.559" y1="98.171" x2="148.209" y2="98.171" width="0.3048" layer="21"/>
+<wire x1="148.209" y1="98.171" x2="148.209" y2="97.917" width="0.3048" layer="21"/>
 </plain>
 <libraries>
 <library name="SparkFun">
@@ -2262,157 +2298,107 @@ design rules under a new name.</description>
 </autorouter>
 <elements>
 <element name="ICSP" library="SparkFun" package="1X06" value="" x="42.164" y="97.028" smashed="yes">
-<attribute name="NAME" x="40.8178" y="98.8568" size="1.27" layer="25" font="vector" ratio="20"/>
+<attribute name="NAME" x="41.3258" y="94.1578" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="40.894" y="93.853" size="1.27" layer="27"/>
 </element>
 <element name="MIDI_OUT" library="jasons_stuff" package="TRUCONN90" value="DIN5PIN&quot;" x="12.954" y="91.44" smashed="yes" rot="R180">
-<attribute name="NAME" x="19.05" y="82.296" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
-<attribute name="VALUE" x="18.034" y="93.345" size="1.27" layer="27" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="2.286" y="95.885" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
 </element>
 <element name="R1" library="resistor" package="R0805" value="220r" x="15.24" y="82.55" smashed="yes" rot="R270">
-<attribute name="NAME" x="16.256" y="83.312" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
-<attribute name="VALUE" x="12.954" y="83.312" size="1.27" layer="27" font="vector" ratio="20" rot="R270"/>
+<attribute name="NAME" x="16.637" y="81.026" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
 <element name="R2" library="resistor" package="R0805" value="220r" x="11.43" y="82.55" smashed="yes" rot="R270">
-<attribute name="NAME" x="12.446" y="83.312" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
-<attribute name="VALUE" x="9.144" y="83.312" size="1.27" layer="27" font="vector" ratio="20" rot="R270"/>
+<attribute name="NAME" x="7.874" y="81.026" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
-<element name="STYLUS" library="SparkFun" package="1X01" value="M01PTH" x="85.09" y="96.52" smashed="yes">
-<attribute name="NAME" x="86.2838" y="98.3488" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="83.82" y="93.345" size="1.27" layer="27" font="vector" ratio="20"/>
-</element>
+<element name="STYLUS" library="SparkFun" package="1X01" value="M01PTH" x="85.09" y="96.52" smashed="yes"/>
 <element name="R3" library="resistor" package="R0805" value="10k" x="69.85" y="97.155" smashed="yes">
-<attribute name="NAME" x="69.088" y="98.171" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="69.088" y="94.869" size="1.27" layer="27" font="vector" ratio="20"/>
+<attribute name="NAME" x="67.564" y="96.393" size="1.27" layer="25" font="vector" ratio="20" rot="R90"/>
 </element>
 <element name="R4" library="resistor" package="R0805" value="1k" x="69.85" y="92.71" smashed="yes" rot="R180">
-<attribute name="NAME" x="70.612" y="91.694" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
-<attribute name="VALUE" x="70.612" y="94.996" size="1.27" layer="27" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="65.532" y="93.599" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
 </element>
 <element name="MIDI" library="led" package="CHIPLED_0805" value="" x="74.93" y="93.98" smashed="yes" rot="R270">
-<attribute name="NAME" x="73.66" y="95.25" size="1.27" layer="25" font="vector" ratio="20"/>
+<attribute name="NAME" x="77.343" y="93.345" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="73.66" y="91.44" size="1.27" layer="27"/>
 </element>
 <element name="R5" library="resistor" package="R0805" value="10k" x="13.97" y="48.26" smashed="yes">
-<attribute name="NAME" x="13.208" y="49.276" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="13.208" y="45.974" size="1.27" layer="27" font="vector" ratio="20"/>
+<attribute name="NAME" x="12.954" y="51.816" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
 <element name="R6" library="resistor" package="R0805" value="10k" x="26.67" y="48.26" smashed="yes">
-<attribute name="NAME" x="25.908" y="49.276" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="25.908" y="45.974" size="1.27" layer="27" font="vector" ratio="20"/>
+<attribute name="NAME" x="25.908" y="51.943" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
 <element name="R7" library="resistor" package="R0805" value="10k" x="39.37" y="48.26" smashed="yes">
-<attribute name="NAME" x="38.608" y="49.276" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="38.608" y="45.974" size="1.27" layer="27" font="vector" ratio="20"/>
+<attribute name="NAME" x="38.481" y="51.943" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
 <element name="D1" library="diode" package="SOD123" value="MBR0520LT" x="38.1" y="95.25" smashed="yes" rot="R270">
-<attribute name="NAME" x="39.1" y="96.35" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
-<attribute name="VALUE" x="35.8" y="96.35" size="1.27" layer="27" font="vector" ratio="20" rot="R270"/>
+<attribute name="NAME" x="37.127" y="91.043" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
 <element name="R8" library="resistor" package="R0805" value="1k" x="69.85" y="94.9325" smashed="yes">
-<attribute name="NAME" x="69.088" y="95.9485" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="69.088" y="92.6465" size="1.27" layer="27" font="vector" ratio="20"/>
+<attribute name="NAME" x="67.5005" y="93.853" size="1.27" layer="25" font="vector" ratio="20" rot="R90"/>
 </element>
 <element name="PWR" library="led" package="CHIPLED_0805" value="" x="74.93" y="97.155" smashed="yes" rot="R270">
-<attribute name="NAME" x="73.66" y="98.425" size="1.27" layer="25" font="vector" ratio="20"/>
+<attribute name="NAME" x="77.343" y="96.52" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="73.66" y="94.615" size="1.27" layer="27"/>
 </element>
 <element name="ONOFF" library="SparkFun" package="SWITCH-SPDT" value="" x="30.607" y="95.885" smashed="yes" rot="R270">
-<attribute name="NAME" x="38.227" y="99.695" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
+<attribute name="NAME" x="25.019" y="96.52" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="21.082" y="99.695" size="1.778" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="S37" library="SparkFun" package="TACTILE-PTH" value="" x="62.1665" y="93.9165" smashed="yes" rot="R270">
-<attribute name="NAME" x="65.9765" y="96.4565" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
+<element name="MODE" library="SparkFun" package="TACTILE-PTH" value="" x="62.1665" y="93.9165" smashed="yes" rot="R270">
+<attribute name="NAME" x="57.3405" y="96.4565" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
 </element>
-<element name="STYLUS1" library="SparkFun" package="1X01" value="M01PTH" x="152.654" y="96.52" smashed="yes">
-<attribute name="NAME" x="153.8478" y="98.3488" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="151.384" y="93.345" size="1.27" layer="27" font="vector" ratio="20"/>
-</element>
+<element name="STYLUS1" library="SparkFun" package="1X01" value="M01PTH" x="152.654" y="96.52" smashed="yes"/>
 <element name="C1" library="rcl" package="C0805" value="" x="45.72" y="91.313" smashed="yes" rot="R180">
-<attribute name="NAME" x="46.99" y="90.043" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="47.117" y="93.853" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="46.99" y="93.853" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C2" library="rcl" package="C0805" value="" x="59.055" y="55.88" smashed="yes" rot="R90">
-<attribute name="NAME" x="57.785" y="54.61" size="1.27" layer="25" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="60.325" y="53.594" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="61.595" y="54.61" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C3" library="rcl" package="C0805" value="" x="34.29" y="91.44" smashed="yes" rot="R180">
-<attribute name="NAME" x="35.56" y="90.17" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="32.258" y="92.075" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="35.56" y="93.98" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="D2" library="jason_eagle6" package="D0805" value="" x="69.85" y="52.07" smashed="yes">
-<attribute name="NAME" x="66.675" y="53.975" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D3" library="jason_eagle6" package="D0805" value="" x="69.85" y="54.61" smashed="yes">
-<attribute name="NAME" x="66.675" y="56.515" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D4" library="jason_eagle6" package="D0805" value="" x="69.85" y="57.15" smashed="yes">
-<attribute name="NAME" x="66.675" y="59.055" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D5" library="jason_eagle6" package="D0805" value="" x="69.85" y="59.69" smashed="yes">
-<attribute name="NAME" x="66.675" y="61.595" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D6" library="jason_eagle6" package="D0805" value="" x="69.85" y="62.23" smashed="yes">
-<attribute name="NAME" x="66.675" y="64.135" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D7" library="jason_eagle6" package="D0805" value="" x="69.85" y="64.77" smashed="yes">
-<attribute name="NAME" x="66.675" y="66.675" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D8" library="jason_eagle6" package="D0805" value="" x="69.85" y="67.31" smashed="yes">
-<attribute name="NAME" x="66.675" y="69.215" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D9" library="jason_eagle6" package="D0805" value="" x="69.85" y="69.85" smashed="yes">
-<attribute name="NAME" x="66.675" y="71.755" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D10" library="jason_eagle6" package="D0805" value="" x="69.85" y="72.39" smashed="yes">
-<attribute name="NAME" x="66.675" y="74.295" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D11" library="jason_eagle6" package="D0805" value="" x="69.85" y="74.93" smashed="yes">
-<attribute name="NAME" x="66.675" y="76.835" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D12" library="jason_eagle6" package="D0805" value="" x="69.85" y="77.47" smashed="yes">
-<attribute name="NAME" x="66.675" y="79.375" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D13" library="jason_eagle6" package="D0805" value="" x="69.85" y="80.01" smashed="yes">
-<attribute name="NAME" x="66.675" y="81.915" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D14" library="jason_eagle6" package="D0805" value="" x="69.85" y="82.55" smashed="yes">
-<attribute name="NAME" x="66.675" y="84.455" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D15" library="jason_eagle6" package="D0805" value="" x="69.85" y="85.09" smashed="yes">
-<attribute name="NAME" x="66.675" y="86.995" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D16" library="jason_eagle6" package="D0805" value="" x="69.85" y="87.63" smashed="yes">
-<attribute name="NAME" x="66.675" y="89.535" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
-<element name="D17" library="jason_eagle6" package="D0805" value="" x="69.85" y="90.17" smashed="yes">
-<attribute name="NAME" x="66.675" y="92.075" size="1.27" layer="25" font="vector" ratio="20"/>
-</element>
+<element name="D2" library="jason_eagle6" package="D0805" value="" x="69.85" y="52.07" smashed="yes"/>
+<element name="D3" library="jason_eagle6" package="D0805" value="" x="69.85" y="54.61" smashed="yes"/>
+<element name="D4" library="jason_eagle6" package="D0805" value="" x="69.85" y="57.15" smashed="yes"/>
+<element name="D5" library="jason_eagle6" package="D0805" value="" x="69.85" y="59.69" smashed="yes"/>
+<element name="D6" library="jason_eagle6" package="D0805" value="" x="69.85" y="62.23" smashed="yes"/>
+<element name="D7" library="jason_eagle6" package="D0805" value="" x="69.85" y="64.77" smashed="yes"/>
+<element name="D8" library="jason_eagle6" package="D0805" value="" x="69.85" y="67.31" smashed="yes"/>
+<element name="D9" library="jason_eagle6" package="D0805" value="" x="69.85" y="69.85" smashed="yes"/>
+<element name="D10" library="jason_eagle6" package="D0805" value="" x="69.85" y="72.39" smashed="yes"/>
+<element name="D11" library="jason_eagle6" package="D0805" value="" x="69.85" y="74.93" smashed="yes"/>
+<element name="D12" library="jason_eagle6" package="D0805" value="" x="69.85" y="77.47" smashed="yes"/>
+<element name="D13" library="jason_eagle6" package="D0805" value="" x="69.85" y="80.01" smashed="yes"/>
+<element name="D14" library="jason_eagle6" package="D0805" value="" x="69.85" y="82.55" smashed="yes"/>
+<element name="D15" library="jason_eagle6" package="D0805" value="" x="69.85" y="85.09" smashed="yes"/>
+<element name="D16" library="jason_eagle6" package="D0805" value="" x="69.85" y="87.63" smashed="yes"/>
+<element name="D17" library="jason_eagle6" package="D0805" value="" x="69.85" y="90.17" smashed="yes"/>
 <element name="C4" library="rcl" package="C0805" value="" x="59.055" y="76.2" smashed="yes" rot="R90">
-<attribute name="NAME" x="57.785" y="74.93" size="1.27" layer="25" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="60.325" y="74.041" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="61.595" y="74.93" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C5" library="rcl" package="E2-5" value="" x="25.146" y="89.916" smashed="yes" rot="R180">
-<attribute name="NAME" x="22.606" y="88.9" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="29.083" y="93.472" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="22.606" y="92.075" size="1.27" layer="27" ratio="10" rot="R180"/>
 </element>
 <element name="BAT1" library="jasons_stuff" package="PP3_BATTERBOX2" value="" x="2.286" y="50.673" smashed="yes">
 <attribute name="NAME" x="45.286" y="68.673" size="1.27" layer="21" font="vector" ratio="20" rot="R270"/>
 </element>
 <element name="C6" library="rcl" package="E2-5" value="" x="25.019" y="84.201" smashed="yes" rot="R180">
-<attribute name="NAME" x="22.479" y="83.185" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="22.987" y="82.296" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="22.479" y="86.36" size="1.27" layer="27" ratio="10" rot="R180"/>
 </element>
 <element name="C7" library="rcl" package="C0805" value="" x="34.417" y="82.55" smashed="yes" rot="R180">
-<attribute name="NAME" x="35.687" y="81.28" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
+<attribute name="NAME" x="39.116" y="83.185" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="VALUE" x="35.687" y="85.09" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="IC4" library="74xx-eu" package="SO16" value="74HC595D" x="62.23" y="83.82" smashed="yes" rot="R90">
-<attribute name="VALUE" x="62.992" y="80.01" size="1.27" layer="27" font="vector" ratio="20" rot="R90"/>
 <attribute name="NAME" x="64.135" y="78.359" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="IC3" library="74xx-eu" package="SO16" value="74HC595D" x="62.23" y="63.5" smashed="yes" rot="R90">
-<attribute name="VALUE" x="62.992" y="59.69" size="1.27" layer="27" font="vector" ratio="20" rot="R90"/>
 <attribute name="NAME" x="64.135" y="58.039" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="IC2" library="burr-brown" package="SOT223" value="REG1117" x="34.29" y="86.995" smashed="yes" rot="R270">
@@ -2420,8 +2406,7 @@ design rules under a new name.</description>
 <attribute name="MPN" value="REG1117" x="34.29" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MF" value="" x="34.29" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="OC_FARNELL" value="1097566" x="34.29" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="38.608" y="89.535" size="1.27" layer="25" font="vector" ratio="20" rot="R270"/>
-<attribute name="VALUE" x="28.448" y="89.789" size="1.27" layer="27" font="vector" ratio="20" rot="R270"/>
+<attribute name="NAME" x="39.624" y="90.551" size="1.27" layer="25" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="U1" library="MCU-PIC16F1825-I_ST_TSSOP14_" package="TSSOP14-0.65-5X4.4MM" value="MCU-PIC16F1825-I/ST(TSSOP14)" x="45.72" y="86.995" smashed="yes" rot="R270">
 <attribute name="PACKAGE" value="TSSOP-14 Microchip" x="45.72" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
@@ -2431,188 +2416,166 @@ design rules under a new name.</description>
 <attribute name="DESCRIPTION" value=" PIC PIC® XLP™ mTouch™ 16F Microcontroller IC 8-Bit 32MHz 14KB (8K x 14) FLASH 14-TSSOP " x="45.72" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MF" value="Microchip" x="45.72" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="PURCHASE-URL" value="https://pricing.snapeda.com/search/part/PIC16F1825-I/ST/?ref=eda" x="45.72" y="86.995" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="43.81476875" y="90.170390625" size="1.27" layer="25" font="vector" ratio="20"/>
+<attribute name="NAME" x="44.95776875" y="82.804390625" size="1.27" layer="25" font="vector" ratio="20"/>
 </element>
 <element name="16" library="pinhead" package="1X01" value="" x="155.956" y="52.324" smashed="yes">
-<attribute name="NAME" x="154.6098" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="154.686" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="14" library="pinhead" package="1X01" value="" x="145.796" y="52.324" smashed="yes">
-<attribute name="NAME" x="144.4498" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="144.526" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="15" library="pinhead" package="1X01" value="" x="150.876" y="52.324" smashed="yes">
-<attribute name="NAME" x="149.5298" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="149.606" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="13" library="pinhead" package="1X01" value="" x="140.716" y="52.324" smashed="yes">
-<attribute name="NAME" x="139.3698" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="139.446" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="12" library="pinhead" package="1X01" value="" x="135.636" y="52.324" smashed="yes">
-<attribute name="NAME" x="134.2898" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="134.366" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="11" library="pinhead" package="1X01" value="" x="130.556" y="52.324" smashed="yes">
-<attribute name="NAME" x="129.2098" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="129.286" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="10" library="pinhead" package="1X01" value="" x="125.476" y="52.324" smashed="yes">
-<attribute name="NAME" x="124.1298" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="124.206" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="9" library="pinhead" package="1X01" value="" x="120.396" y="52.324" smashed="yes">
-<attribute name="NAME" x="119.0498" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="119.126" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="8" library="pinhead" package="1X01" value="" x="115.316" y="52.324" smashed="yes">
-<attribute name="NAME" x="113.9698" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="114.046" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="7" library="pinhead" package="1X01" value="" x="110.236" y="52.324" smashed="yes">
-<attribute name="NAME" x="108.8898" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="108.966" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="6" library="pinhead" package="1X01" value="" x="105.156" y="52.324" smashed="yes">
-<attribute name="NAME" x="103.8098" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="103.886" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="5" library="pinhead" package="1X01" value="" x="100.076" y="52.324" smashed="yes">
-<attribute name="NAME" x="98.7298" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="98.806" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="4" library="pinhead" package="1X01" value="" x="94.996" y="52.324" smashed="yes">
-<attribute name="NAME" x="93.6498" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="93.726" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="3" library="pinhead" package="1X01" value="" x="89.916" y="52.324" smashed="yes">
-<attribute name="NAME" x="88.5698" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="88.646" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="2" library="pinhead" package="1X01" value="" x="84.836" y="52.324" smashed="yes">
-<attribute name="NAME" x="83.4898" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="83.566" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="1" library="pinhead" package="1X01" value="" x="79.756" y="52.324" smashed="yes">
-<attribute name="NAME" x="78.4098" y="54.1528" size="1.27" layer="25" font="vector" ratio="20"/>
 <attribute name="VALUE" x="78.486" y="49.149" size="1.27" layer="27"/>
 </element>
 <element name="SW1" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="7.62" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="1.12" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="9.523" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW2" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="20.32" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="13.82" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="22.223" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW3" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="33.02" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="26.52" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="35.177" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW4" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="45.72" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="39.22" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="47.623" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW5" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="58.42" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="51.92" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="60.323" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW6" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="71.12" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="64.62" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="73.023" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW7" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="83.82" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="77.32" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="85.723" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW8" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="96.52" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="90.02" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="98.423" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW9" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="109.22" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="102.72" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="111.123" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW10" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="121.92" y="39.624" smashed="yes" rot="R90">
-<attribute name="NAME" x="115.42" y="36.324" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="124.331" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW11" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="134.62" y="39.497" smashed="yes" rot="R90">
-<attribute name="NAME" x="128.12" y="36.197" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="137.031" y="40.236" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW12" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="147.32" y="39.497" smashed="yes" rot="R90">
-<attribute name="NAME" x="140.82" y="36.197" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="149.731" y="40.109" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW13" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="10.16" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="3.66" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="12.571" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW14" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="22.86" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="16.36" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="25.271" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW15" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="35.56" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="29.06" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="37.971" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW16" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="48.26" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="41.76" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="50.671" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW17" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="60.96" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="54.46" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="63.371" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW18" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="73.66" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="67.16" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="76.071" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW19" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="86.36" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="79.86" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="88.771" y="24.996" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW20" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="99.06" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="92.56" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="101.471" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW21" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="111.76" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="105.26" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="114.171" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW22" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="124.46" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="117.96" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="126.871" y="24.996" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW23" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="137.16" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="130.66" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="139.571" y="24.996" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW24" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="149.86" y="24.384" smashed="yes" rot="R90">
-<attribute name="NAME" x="143.36" y="21.084" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="152.271" y="25.123" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW25" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="12.7" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="6.2" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="15.111" y="9.883" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW26" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="25.4" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="18.9" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="27.811" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW27" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="38.1" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="31.6" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="40.511" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW28" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="50.8" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="44.3" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="53.211" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW29" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="63.5" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="57" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="65.911" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW30" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="76.2" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="69.7" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="78.611" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW31" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="88.9" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="82.4" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="91.311" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW32" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="101.6" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="95.1" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="104.011" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW33" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="114.3" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="107.8" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="116.711" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW34" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="127" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="120.5" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="129.284" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW35" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="139.7" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="133.2" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="142.111" y="9.756" size="1.27" layer="21" font="vector" ratio="20" rot="R180"/>
 </element>
 <element name="SW36" library="jason_eagle6" package="12MMTACT_SMT" value="12MMTACT_SMT" x="152.4" y="9.144" smashed="yes" rot="R90">
-<attribute name="NAME" x="145.9" y="5.844" size="1.27" layer="21" font="vector" ratio="20" rot="R90"/>
+<attribute name="NAME" x="150.116" y="8.532" size="1.27" layer="21" font="vector" ratio="20"/>
 </element>
-<element name="STYLUS2" library="SparkFun" package="1X01" value="M01PTH" x="87.63" y="96.52" smashed="yes">
-<attribute name="NAME" x="88.8238" y="98.3488" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="86.36" y="93.345" size="1.27" layer="27" font="vector" ratio="20"/>
-</element>
-<element name="STYLUS3" library="SparkFun" package="1X01" value="M01PTH" x="150.114" y="96.52" smashed="yes">
-<attribute name="NAME" x="151.3078" y="98.3488" size="1.27" layer="25" font="vector" ratio="20"/>
-<attribute name="VALUE" x="148.844" y="93.345" size="1.27" layer="27" font="vector" ratio="20"/>
-</element>
+<element name="STYLUS2" library="SparkFun" package="1X01" value="M01PTH" x="87.63" y="96.52" smashed="yes"/>
+<element name="STYLUS3" library="SparkFun" package="1X01" value="M01PTH" x="150.114" y="96.52" smashed="yes"/>
 </elements>
 <signals>
 <signal name="RA5">
@@ -2715,7 +2678,6 @@ design rules under a new name.</description>
 <wire x1="27.9477" y1="38.1077" x2="27.94" y2="38.1" width="0.4064" layer="16"/>
 <wire x1="17.82" y1="38.1477" x2="17.78" y2="38.1077" width="0.4064" layer="1"/>
 <via x="17.78" y="38.1077" extent="1-16" drill="0.9"/>
-<wire x1="43.18" y1="47.625" x2="43.18" y2="45.76" width="0.4064" layer="1"/>
 <wire x1="43.18" y1="45.76" x2="43.22" y2="45.72" width="0.4064" layer="1"/>
 <wire x1="14.82" y1="48.26" x2="16.184" y2="48.26" width="0.3048" layer="1"/>
 <wire x1="16.184" y1="48.26" x2="17.82" y2="46.624" width="0.3048" layer="1"/>
@@ -3772,8 +3734,8 @@ design rules under a new name.</description>
 <contactref element="R5" pad="1"/>
 <contactref element="R6" pad="1"/>
 <contactref element="R7" pad="1"/>
-<contactref element="S37" pad="1"/>
-<contactref element="S37" pad="2"/>
+<contactref element="MODE" pad="1"/>
+<contactref element="MODE" pad="2"/>
 <contactref element="C1" pad="1"/>
 <contactref element="C2" pad="1"/>
 <contactref element="C3" pad="2"/>
@@ -3804,7 +3766,8 @@ design rules under a new name.</description>
 <vertex x="167.64" y="-2.54"/>
 <vertex x="167.64" y="101.6"/>
 </polygon>
-<wire x1="59.055" y1="75.25" x2="54.286" y2="72.173" width="0" layer="19" extent="1-1"/>
+<via x="58.293" y="71.374" extent="1-16" drill="0.6"/>
+<via x="76.454" y="87.249" extent="1-16" drill="0.6"/>
 </signal>
 <signal name="RC0">
 <contactref element="IC3" pad="14"/>
@@ -4185,8 +4148,8 @@ design rules under a new name.</description>
 <wire x1="67.6275" y1="90.17" x2="68.9" y2="90.17" width="0.3048" layer="1"/>
 </signal>
 <signal name="RC5">
-<contactref element="S37" pad="3"/>
-<contactref element="S37" pad="4"/>
+<contactref element="MODE" pad="3"/>
+<contactref element="MODE" pad="4"/>
 <contactref element="U1" pad="5"/>
 <wire x1="42.795" y1="86.345" x2="43.83" y2="86.345" width="0.3048" layer="1"/>
 <wire x1="43.83" y1="86.345" x2="44.45" y2="85.725" width="0.3048" layer="1"/>
@@ -4484,4 +4447,10 @@ design rules under a new name.</description>
 </errors>
 </board>
 </drawing>
+<compatibility>
+<note version="6.3" minversion="6.2.2" severity="warning">
+Since Version 6.2.2 text objects can contain more than one line,
+which will not be processed correctly with this version.
+</note>
+</compatibility>
 </eagle>
