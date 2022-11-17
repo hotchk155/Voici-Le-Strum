@@ -15631,6 +15631,7 @@ Based on the following sources:
 <wire x1="342.9" y1="386.08" x2="342.9" y2="353.06" width="0.1524" layer="91"/>
 <junction x="342.9" y="353.06"/>
 <junction x="403.86" y="337.82"/>
+<wire x1="353.06" y1="396.24" x2="353.06" y2="353.06" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <wire x1="302.26" y1="452.12" x2="332.74" y2="452.12" width="0.1524" layer="91"/>
