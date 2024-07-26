@@ -1,0 +1,9 @@
+C3, C4, C5, C6, C7 		100nF 0805
+D1      			MBR0520LT      
+D2-D19				TS4148          
+IC1      			REG1117
+IC2      			PIC16F1825
+IC3, IC4    			74HC595D
+R1, R2       			220r
+R3, R6, R7, R8       		10k
+R4, R5       			1k
